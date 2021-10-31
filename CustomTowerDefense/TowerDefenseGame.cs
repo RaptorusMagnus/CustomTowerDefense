@@ -17,10 +17,19 @@ namespace CustomTowerDefense
         #region Our game sprites
         
         private Texture2D _backgroundSprite;
+        private Texture2D _spaceship0002;
         
         #endregion
 
+        #region Graphical constants
+
+        private const int ASPECT_RATIO_WIDTH = 1200;
+        private const int ASPECT_RATIO_HEIGHT = 720;
+
+        #endregion
+
         private RenderTarget2D _renderTarget;
+        private float _scale = 0.44444f;
         
         public TowerDefenseGame()
         {
@@ -35,8 +44,8 @@ namespace CustomTowerDefense
             Window.Title = "Tower defense";
             
             // We set a standard, wide screen, aspect ratio
-            _graphics.PreferredBackBufferWidth = 1200;
-            _graphics.PreferredBackBufferHeight = 720;
+            _graphics.PreferredBackBufferWidth = ASPECT_RATIO_WIDTH;
+            _graphics.PreferredBackBufferHeight = ASPECT_RATIO_HEIGHT;
             _graphics.ApplyChanges();
             
             // must be at the end because base.Initialize is calling LoadContent
@@ -49,8 +58,9 @@ namespace CustomTowerDefense
             
             // TODO: load all the textures in a dedicated method or class
             _backgroundSprite = Content.Load<Texture2D>("Starfield_Background");
+            _spaceship0002 = Content.Load<Texture2D>("spaceship_0002");
 
-            // Nowadays, even a low cost phone is now capable of displaying 1080p resolution,
+            // Nowadays, even a low cost smartphone is capable of displaying 1080p resolution,
             // so let's take that as a basis. 
             _renderTarget = new RenderTarget2D(GraphicsDevice, 1920, 1080);
         }
@@ -61,23 +71,42 @@ namespace CustomTowerDefense
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == 
-                ButtonState.Pressed || Keyboard.GetState().IsKeyDown(
-                    Keys.Escape))
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
+                Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
                 Exit();
+            }
+            
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
+            GraphicsDevice.SetRenderTarget(_renderTarget);
             GraphicsDevice.Clear(Color.Black);
             _spriteBatch.Begin();
             
             // The background must be painted first,
             // so don't put code above this line, unless you know what you are doing.
             FillBackgroundWithBackgroundSprites();
+            
+            _spriteBatch.Draw(_spaceship0002, Vector2.Zero, Color.White);
+            
+            _spriteBatch.End();
+            GraphicsDevice.SetRenderTarget(null);
+
+            #region Specific scale rendering
+
+            _scale = 1f / (1080f / _graphics.GraphicsDevice.Viewport.Height);
+            GraphicsDevice.Clear(Color.Black);
+            _spriteBatch.Begin();
+            
+            _spriteBatch.Draw(_renderTarget, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, _scale, SpriteEffects.None, 0f);
 
             _spriteBatch.End();
+
+            #endregion
+
             base.Draw(gameTime);
         }
         
@@ -92,11 +121,11 @@ namespace CustomTowerDefense
         {
             var currentBgSpritePosition = new Vector2(0, 0);
 
-            while(currentBgSpritePosition.X < _graphics.PreferredBackBufferWidth)
+            while(currentBgSpritePosition.X < _renderTarget.Width)
             {
                 // we paint a full column from top to bottom.
                 currentBgSpritePosition.Y = 0;
-                while (currentBgSpritePosition.Y < _graphics.PreferredBackBufferHeight)
+                while (currentBgSpritePosition.Y < _renderTarget.Height)
                 {
                     _spriteBatch.Draw(_backgroundSprite, currentBgSpritePosition, Color.White);
                     currentBgSpritePosition.Y += _backgroundSprite.Height;
