@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Content\bin" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="Content\Starfield_Background.xnb">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Content\Starfield_Background.png" />
+      <Content Include="Content\Starfield_Background.png" />
+      <None Remove="Content\Content.mgcb" />
+      <Content Include="Content\Content.mgcb" />
+      <None Remove="Content\bin\Starfield_Background.xnb" />
+    </ItemGroup>
+
+</Project>
