@@ -14,6 +14,8 @@ namespace CustomTowerDefense
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
+        private SpriteFont _defaultFont;
+        
         #region Our game sprites
         
         private Texture2D _backgroundSprite;
@@ -60,6 +62,7 @@ namespace CustomTowerDefense
             // TODO: load all the textures in a dedicated method or class
             _backgroundSprite = Content.Load<Texture2D>(@"Sprites\Starfield_Background");
             _spaceship0002 = Content.Load<Texture2D>(@"Sprites\Spaceship_0002_small");
+            _defaultFont = Content.Load<SpriteFont>(@"Fonts\defaultFont");
 
             // Nowadays, even a low cost smartphone is capable of displaying 1080p resolution,
             // so let's take that as a basis. 
@@ -92,6 +95,7 @@ namespace CustomTowerDefense
             FillBackgroundWithBackgroundSprites();
             
             _spriteBatch.Draw(_spaceship0002, Vector2.Zero, Color.White);
+            _spriteBatch.DrawString(_defaultFont, "Text test", new Vector2(100, 100), Color.White);
             
             _spriteBatch.End();
             GraphicsDevice.SetRenderTarget(null);
