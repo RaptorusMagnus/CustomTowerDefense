@@ -1,27 +1,39 @@
-﻿namespace CustomTowerDefense.ValueObjects
+﻿using Microsoft.Xna.Framework;
+
+namespace CustomTowerDefense.ValueObjects
 {
     /// <summary>
-    /// Simple immutable X-Y coordinate
+    /// Simple immutable X-Y coordinate.
+    /// X and Y must be floats because for very slow moving objects we could have tiny position increments.
+    /// This way, the position changes little by little until it reaches the next pixel. 
     /// </summary>
     public struct Coordinate
     {
-        public int X { get; }
-        public int Y { get; }
+        public float X { get; }
+        public float Y { get; }
 
-        public Coordinate(int x, int y)
+        public Coordinate(float x, float y)
         {
             X = x;
             Y = y;
         }
 
+        public Vector2 GetVector2()
+        {
+            return new Vector2(X, Y);
+        }
+
         public override bool Equals(object obj)
         {
+            if (obj == null)
+                return false;
+            
             if (obj.GetType() != typeof(Coordinate))
                 return false;
 
-            Coordinate receivedCoordinate = (Coordinate)obj;
+            var receivedCoordinate = (Coordinate)obj;
 
-            return this.X == receivedCoordinate.X && this.Y == receivedCoordinate.Y;
+            return this.X.Equals(receivedCoordinate.X)  && this.Y.Equals(receivedCoordinate.Y);
         }
 
         public override int GetHashCode()

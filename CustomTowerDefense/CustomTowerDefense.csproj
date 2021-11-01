@@ -12,7 +12,6 @@
       <Folder Include="Content\bin" />
       <Folder Include="Content\bin\Fonts" />
       <Folder Include="Content\Sounds" />
-      <Folder Include="GameObjects\SpaceShips" />
     </ItemGroup>
 
     <ItemGroup>

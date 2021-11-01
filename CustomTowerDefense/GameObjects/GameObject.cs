@@ -9,12 +9,25 @@ namespace CustomTowerDefense.GameObjects
     /// </summary>
     public class GameObject
     {
-        #region ----- Properties -----
+        private Coordinate _currentCoordinate;
+        
+        private int RotationPointDistanceX => Width / 2;
+        private int RotationPointDistanceY => Height / 2;
+        
+        #region ----- Public Properties -----
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        public PreciseObjectType PreciseObjectType { get; }
 
-        public int RotationPointDistanceX => Width / 2;
-        public int RotationPointDistanceY => Height / 2;
-
-        public Coordinate CurrentCoordinate { get; set; }
+        public float RotationAngle { get; protected set; }
+        
+        public virtual Coordinate CurrentCoordinate
+        {
+            get => _currentCoordinate;
+            set => _currentCoordinate = value;
+        }
 
         public int Width { get; set; }
 
@@ -27,23 +40,18 @@ namespace CustomTowerDefense.GameObjects
         public string TextureImagePath { get; }
 
         /// <summary>
-        /// This field will contain null, until the LoadContent method is executed
-        /// </summary>
-        public Texture2D Texture { get; set; }
-
-        /// <summary>
         /// Current color effect, applied on the object. Color.White == no effect
         /// </summary>
         public Color CurrentColorEffect { get; set; }
 
         public Vector2 RotationVector => new Vector2(Width / 2, Height / 2);
 
-        public Rectangle BoundingRect
+        public Rectangle BoundaryRect
         {
             get
             {
-                int topLeftX = CurrentCoordinate.X - (int)RotationVector.X;
-                int topLeftY = CurrentCoordinate.Y - (int)RotationVector.Y;
+                var topLeftX = (int)CurrentCoordinate.X - (int)RotationVector.X;
+                var topLeftY = (int)CurrentCoordinate.Y - (int)RotationVector.Y;
 
                 return new Rectangle(
                     topLeftX, topLeftY,
@@ -57,13 +65,14 @@ namespace CustomTowerDefense.GameObjects
 
         #region ----- Constructors -----
 
-        public GameObject(Coordinate coordinate, int width, int height, string imagePath)
+        public GameObject(Coordinate coordinate, int width, int height, string imagePath, PreciseObjectType preciseObjectType)
         {
-            CurrentCoordinate = coordinate;
+            _currentCoordinate = coordinate;
             Width = width;
             Height = height;
             TextureImagePath = imagePath;
             CurrentColorEffect = Color.White;
+            PreciseObjectType = preciseObjectType;
         }
 
         #endregion // Constructors
@@ -74,8 +83,8 @@ namespace CustomTowerDefense.GameObjects
         /// </summary>
         public void CorrectCoordinateAfterOuterBoundControl(int screenWidth, int screenHeight)
         {
-            int newX = CurrentCoordinate.X;
-            int newY = CurrentCoordinate.Y;
+            float newX = CurrentCoordinate.X;
+            float newY = CurrentCoordinate.Y;
 
             if ((CurrentCoordinate.X + RotationPointDistanceX) > screenWidth)
             {
@@ -105,7 +114,7 @@ namespace CustomTowerDefense.GameObjects
 
         public Rectangle GetRectangle()
         {
-            return new Rectangle(CurrentCoordinate.X, CurrentCoordinate.Y, Width, Height);
+            return new Rectangle((int)CurrentCoordinate.X, (int)CurrentCoordinate.Y, Width, Height);
         }
     }
 }

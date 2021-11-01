@@ -1,4 +1,7 @@
-﻿using System.Transactions;
+﻿using System;
+using System.Transactions;
+using CustomTowerDefense.GameObjects.SpaceShips;
+using CustomTowerDefense.ValueObjects;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -33,6 +36,16 @@ namespace CustomTowerDefense
         private RenderTarget2D _renderTarget;
         private float _scale = 0.44444f;
         
+        #region to scratch
+        
+        // TODO: this is just a test: the loading process must be elsewhere 
+        SmallScoutShip _smallScoutShip = new SmallScoutShip(new Coordinate(500, 500));
+        private float xDirection = 0;
+        private float yDirection = 0;
+        private bool goUp = false;
+        
+        #endregion
+        
         public TowerDefenseGame()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -58,10 +71,10 @@ namespace CustomTowerDefense
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            
+
             // TODO: load all the textures in a dedicated method or class
             _backgroundSprite = Content.Load<Texture2D>(@"Sprites\Starfield_Background");
-            _spaceship0002 = Content.Load<Texture2D>(@"Sprites\Spaceship_0002_small");
+            _spaceship0002 = Content.Load<Texture2D>(@$"Sprites\{_smallScoutShip.TextureImagePath}");
             _defaultFont = Content.Load<SpriteFont>(@"Fonts\defaultFont");
 
             // Nowadays, even a low cost smartphone is capable of displaying 1080p resolution,
@@ -80,6 +93,33 @@ namespace CustomTowerDefense
             {
                 Exit();
             }
+
+            var random = new Random();
+
+            if (goUp)
+            {
+                if (yDirection > -1)
+                {
+                    yDirection -= 0.02f;
+                }
+                else
+                {
+                    goUp = false;
+                }
+            }
+            else
+            {
+                if (yDirection < 1)
+                {
+                    yDirection += 0.02f;
+                }
+                else
+                {
+                    goUp = true;
+                }
+            }
+            
+            _smallScoutShip.Move(new Vector2(1, yDirection));
             
             base.Update(gameTime);
         }
@@ -94,7 +134,16 @@ namespace CustomTowerDefense
             // so don't put code above this line, unless you know what you are doing.
             FillBackgroundWithBackgroundSprites();
             
-            _spriteBatch.Draw(_spaceship0002, Vector2.Zero, Color.White);
+            _spriteBatch.Draw(
+                _spaceship0002,
+                _smallScoutShip.GetRectangle(),
+                null,
+                _smallScoutShip.CurrentColorEffect,
+                _smallScoutShip.RotationAngle,
+                Vector2.Zero,
+                SpriteEffects.None,
+                0);
+            
             _spriteBatch.DrawString(_defaultFont, "Text test", new Vector2(100, 100), Color.White);
             
             _spriteBatch.End();
