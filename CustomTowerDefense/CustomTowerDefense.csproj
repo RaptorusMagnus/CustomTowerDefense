@@ -10,6 +10,7 @@
 
     <ItemGroup>
       <Folder Include="Content\bin" />
+      <Folder Include="GameObjects\SpaceShips" />
     </ItemGroup>
 
     <ItemGroup>
@@ -24,6 +25,9 @@
       </Content>
       <None Remove="Content\bin\Starfield_Background.xnb" />
       <None Update="Content\Spaceship_0002.xnb">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Content\Spaceship_0002_small.xnb">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

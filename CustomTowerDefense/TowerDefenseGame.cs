@@ -58,7 +58,7 @@ namespace CustomTowerDefense
             
             // TODO: load all the textures in a dedicated method or class
             _backgroundSprite = Content.Load<Texture2D>("Starfield_Background");
-            _spaceship0002 = Content.Load<Texture2D>("spaceship_0002");
+            _spaceship0002 = Content.Load<Texture2D>("spaceship_0002_small");
 
             // Nowadays, even a low cost smartphone is capable of displaying 1080p resolution,
             // so let's take that as a basis. 
