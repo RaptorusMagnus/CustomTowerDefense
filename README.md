@@ -9,3 +9,4 @@ This project was designed with the following goals in mind:
 * Keep a clean architecture to allow the game to grow in the future
 * Allow custom level building with an external descriptive text file (json or xml)
 * A lot of comments to remember what I had learned, and to help other newbies
+* Build a game that is actually fun to play, not just a single level demo
