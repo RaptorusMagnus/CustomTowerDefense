@@ -46,6 +46,7 @@ namespace CustomTowerDefense
             // We set a standard, wide screen, aspect ratio
             _graphics.PreferredBackBufferWidth = ASPECT_RATIO_WIDTH;
             _graphics.PreferredBackBufferHeight = ASPECT_RATIO_HEIGHT;
+            _graphics.IsFullScreen = false;
             _graphics.ApplyChanges();
             
             // must be at the end because base.Initialize is calling LoadContent
@@ -57,8 +58,8 @@ namespace CustomTowerDefense
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             
             // TODO: load all the textures in a dedicated method or class
-            _backgroundSprite = Content.Load<Texture2D>("Starfield_Background");
-            _spaceship0002 = Content.Load<Texture2D>("spaceship_0002_small");
+            _backgroundSprite = Content.Load<Texture2D>(@"Sprites\Starfield_Background");
+            _spaceship0002 = Content.Load<Texture2D>(@"Sprites\Spaceship_0002_small");
 
             // Nowadays, even a low cost smartphone is capable of displaying 1080p resolution,
             // so let's take that as a basis. 

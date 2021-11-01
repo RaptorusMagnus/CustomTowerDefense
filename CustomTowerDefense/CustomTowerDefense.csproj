@@ -10,24 +10,26 @@
 
     <ItemGroup>
       <Folder Include="Content\bin" />
+      <Folder Include="Content\Fonts" />
+      <Folder Include="Content\Sounds" />
       <Folder Include="GameObjects\SpaceShips" />
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="Content\Starfield_Background.xnb">
+      <Content Include="Content\Sprites\Starfield_Background.png" />
+      <Content Include="Content\Sprites\Starfield_Background.xnb">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
       <None Remove="Content\Starfield_Background.png" />
-      <Content Include="Content\Starfield_Background.png" />
       <None Remove="Content\Content.mgcb" />
       <Content Include="Content\Content.mgcb">
         <Generator>C:\Users\mda\.dotnet\tools\.store\dotnet-mgcb-editor\3.8.0.1641\dotnet-mgcb-editor\3.8.0.1641\tools\netcoreapp3.1\any\mgcb-editor-wpf.exe</Generator>
       </Content>
       <None Remove="Content\bin\Starfield_Background.xnb" />
-      <None Update="Content\Spaceship_0002.xnb">
+      <None Update="Content\Sprites\Spaceship_0002.xnb">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="Content\Spaceship_0002_small.xnb">
+      <None Update="Content\Sprites\Spaceship_0002_small.xnb">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>
