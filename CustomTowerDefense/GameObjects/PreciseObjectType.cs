@@ -1,4 +1,4 @@
-﻿namespace CustomTowerDefense
+﻿namespace CustomTowerDefense.GameObjects
 {
     /// <summary>
     /// A finite list to precisely determine the type of the objects in the game.
