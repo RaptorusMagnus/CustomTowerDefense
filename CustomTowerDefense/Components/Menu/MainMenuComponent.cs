@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace CustomTowerDefense.Components
+namespace CustomTowerDefense.Components.Menu
 {
     public class MainMenuComponent: DrawableGameComponent
     {

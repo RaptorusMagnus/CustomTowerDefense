@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Transactions;
+using CustomTowerDefense.GameObjects;
 using CustomTowerDefense.GameObjects.SpaceShips;
 using CustomTowerDefense.ValueObjects;
 using Microsoft.Xna.Framework;
@@ -48,6 +49,9 @@ namespace CustomTowerDefense
         private float _globalRotationAngle = 0f;
         
         #endregion
+
+        public KeyboardState KeyboardState;
+        public KeyboardState PreviousKeyboardState;
         
         public TowerDefenseGame()
         {
@@ -65,6 +69,8 @@ namespace CustomTowerDefense
             _graphics.PreferredBackBufferWidth = ASPECT_RATIO_WIDTH;
             _graphics.PreferredBackBufferHeight = ASPECT_RATIO_HEIGHT;
             _graphics.IsFullScreen = false;
+            IsMouseVisible = true;
+            IsFixedTimeStep = true;
             _graphics.ApplyChanges();
             
             // must be at the end because base.Initialize is calling LoadContent
@@ -98,6 +104,9 @@ namespace CustomTowerDefense
                 Exit();
             }
 
+            PreviousKeyboardState = KeyboardState;
+            KeyboardState = Keyboard.GetState();
+            
             _globalRotationAngle += 0.02f;
 
             if (goUp)
@@ -184,6 +193,12 @@ namespace CustomTowerDefense
         
         #endregion Standard Monogame methods
 
+        public bool NewKey(Keys key)
+        {
+            return KeyboardState.IsKeyDown(key) && PreviousKeyboardState.IsKeyUp(key);
+        }
+        
+        
         /// <summary>
         /// Fill the background with the necessary number of sprites depending on the screen size.
         /// we could apply a patchwork of various sprites in the background (and it would be done in this method)

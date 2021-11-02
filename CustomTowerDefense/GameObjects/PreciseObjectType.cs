@@ -6,6 +6,7 @@
     /// </summary>
     public enum PreciseObjectType
     {
+        PathElement,
         SmallScoutShip,
         StructureElement
     }

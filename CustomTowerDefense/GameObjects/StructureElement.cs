@@ -1,6 +1,6 @@
 ﻿using CustomTowerDefense.ValueObjects;
 
-namespace CustomTowerDefense.GameObjects.SpaceShips
+namespace CustomTowerDefense.GameObjects
 {
     public class StructureElement: GameObject
     {
