@@ -11,6 +11,7 @@
     <ItemGroup>
       <Folder Include="Content\bin" />
       <Folder Include="Content\bin\Fonts" />
+      <Folder Include="Content\bin\Sprites" />
       <Folder Include="Content\Sounds" />
     </ItemGroup>
 
@@ -31,13 +32,13 @@
       <None Update="Content\Sprites\Spaceship_0002_small.xnb">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="Content\Sprites\StructureElement_03.xnb">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
       <None Update="Content\Sprites\StructureElement_01.xnb">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
       <None Update="Content\Fonts\defaultFont.xnb">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Content\Sprites\StructureElement_04.xnb">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

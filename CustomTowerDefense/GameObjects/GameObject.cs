@@ -16,9 +16,6 @@ namespace CustomTowerDefense.GameObjects
         
         #region ----- Public Properties -----
         
-        /// <summary>
-        /// 
-        /// </summary>
         public PreciseObjectType PreciseObjectType { get; }
 
         public float RotationAngle { get; protected set; }
