@@ -10,3 +10,9 @@ This project was designed with the following goals in mind:
 * Allow custom level building with an external descriptive text file (json or xml)
 * A lot of comments to remember what I had learned, and to help other newbies
 * Build a game that is actually fun to play, not just a single level demo
+
+## Tutorials used to learn and build this game
+* Free complete online toturial from scratch
+https://www.ictdemy.com/csharp/monogame/csharp-programming-games-monogame-tetris
+* MonoGame from scratch tutorial video for Experienced programmers
+https://youtu.be/-5ELPrIJNvA
