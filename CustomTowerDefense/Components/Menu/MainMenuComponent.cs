@@ -15,10 +15,10 @@ namespace CustomTowerDefense.Components.Menu
         public MainMenuComponent(TowerDefenseGame game) : base(game)
         {
             var menuItems = new MenuItemsComponent(game, new Vector2(250, 250), Color.Red, Color.Yellow, 80);
-            menuItems.AddItem("START");
-            menuItems.AddItem("TOP SCORE");
-            menuItems.AddItem("CREDITS");
-            menuItems.AddItem("QUIT");
+            menuItems.AddItem("START", null);
+            menuItems.AddItem("TOP SCORE", null);
+            menuItems.AddItem("CREDITS", null);
+            menuItems.AddItem("QUIT", Game.Exit);
             
             _menuItemsComponent = menuItems;
         }

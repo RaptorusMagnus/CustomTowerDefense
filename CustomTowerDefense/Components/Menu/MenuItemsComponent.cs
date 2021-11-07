@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -30,11 +31,11 @@ namespace CustomTowerDefense.Components.Menu
             SelectedItem = null;
         }
 
-        public void AddItem(string text)
+        public void AddItem(string text, Action menuAction)
         {
             // setting up the position according to the item's collection index
             var position = new Vector2(_position.X, _position.Y + _items.Count * _textSize);
-            var menuItem = new MenuItem(text, position);
+            var menuItem = new MenuItem(text, position, menuAction);
             
             _items.Add(menuItem);
             
@@ -58,6 +59,8 @@ namespace CustomTowerDefense.Components.Menu
                 SelectPrevious();
             else if (_towerDefenseGame.IsNewKey(Keys.Down))
                 SelectNext();
+            else if (_towerDefenseGame.IsNewKey(Keys.Enter))
+                DoMenuAction();
             
             base.Update(gameTime);
         }
@@ -97,6 +100,11 @@ namespace CustomTowerDefense.Components.Menu
             SelectedItem = index > 0 ? _items[index - 1] : _items.Last();
         }
 
+        private void DoMenuAction()
+        {
+            SelectedItem.MenuAction?.Invoke();
+        }
+        
         #endregion
 
     }
