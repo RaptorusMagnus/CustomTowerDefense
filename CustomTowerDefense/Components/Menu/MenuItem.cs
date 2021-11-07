@@ -6,13 +6,13 @@ namespace CustomTowerDefense.Components.Menu
     {
         public string Text;
         public Vector2 Position;
-        public float Size;
+        public float TextSize;
 
         public MenuItem(string text, Vector2 position)
         {
             this.Text = text;
             this.Position = position;
-            Size = 0.6f;
+            TextSize = 0.6f;
         }
     }
 }

@@ -79,6 +79,20 @@ namespace CustomTowerDefense.Components.Menu
         public override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
+            
+            _towerDefenseGame.SpriteBatch.Begin();
+            
+            foreach (MenuItem item in _items)
+            {
+                Color color = _itemColor;
+                
+                if (item == SelectedItem)
+                    color = _selectedItemColor;
+                
+                _towerDefenseGame.SpriteBatch.DrawString(_towerDefenseGame.DefaultFont, item.Text, item.Position, color);
+            }
+            
+            _towerDefenseGame.SpriteBatch.End();
         }
     }
 }

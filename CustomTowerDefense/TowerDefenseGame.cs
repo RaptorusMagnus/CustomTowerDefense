@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Transactions;
+using CustomTowerDefense.Components.Menu;
 using CustomTowerDefense.GameObjects;
 using CustomTowerDefense.GameObjects.SpaceShips;
 using CustomTowerDefense.ValueObjects;
@@ -11,14 +12,14 @@ namespace CustomTowerDefense
 {
     /// <summary>
     /// Main Class with standard MonoGame structure.
-    /// Keep method content as short as possible: the complex tasks must be moved to other classes.
+    /// Keep method content as short as possible: the complex tasks must be moved to other classes and components.
     /// </summary>
     public class TowerDefenseGame: Game
     {
         private GraphicsDeviceManager _graphics;
-        private SpriteBatch _spriteBatch;
+        public SpriteBatch SpriteBatch;
 
-        private SpriteFont _defaultFont;
+        public SpriteFont DefaultFont;
         
         #region Our game sprites
         
@@ -37,6 +38,12 @@ namespace CustomTowerDefense
 
         private RenderTarget2D _renderTarget;
         private float _scale = 0.44444f;
+        
+        #region all game scenes available in the game
+
+        private GameScene _mainMenuScene;
+        
+        #endregion
         
         #region to scratch
         
@@ -73,23 +80,46 @@ namespace CustomTowerDefense
             IsFixedTimeStep = true;
             _graphics.ApplyChanges();
             
+            MenuItemsComponent menuItems = new MenuItemsComponent(this, new Vector2(250, 250), Color.Red, Color.Yellow, 80);
+            menuItems.AddItem("START");
+            menuItems.AddItem("TOP SCORE");
+            menuItems.AddItem("CREDITS");
+            menuItems.AddItem("QUIT");
+            
+            MainMenuComponent mainMenuComponent = new MainMenuComponent(this, menuItems);
+
+            _mainMenuScene = new GameScene(this, mainMenuComponent, menuItems);
+            
+            foreach (var gameComponent in Components)
+            {
+                var component = (GameComponent) gameComponent;
+                ChangeComponentState(component, false);
+            }
+            
+            // TODO: finish the Game Scenes tutorial and implement the menu.
+            // https://www.ictdemy.com/csharp/monogame/csharp-programming-games-monogame-tetris/tetris-in-monogame-game-scene-management
+            
+            
+            
             // must be at the end because base.Initialize is calling LoadContent
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
+            SpriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: load all the textures in a dedicated method or class
             _backgroundSprite = Content.Load<Texture2D>(@"Sprites\Starfield_Background");
             _smallScoutSprite = Content.Load<Texture2D>(@$"Sprites\{_smallScoutShip.TextureImagePath}");
             _structureElementSprite = Content.Load<Texture2D>(@$"Sprites\{_structureElement.TextureImagePath}");
-            _defaultFont = Content.Load<SpriteFont>(@"Fonts\defaultFont");
+            DefaultFont = Content.Load<SpriteFont>(@"Fonts\defaultFont");
 
             // Nowadays, even a low cost smartphone is capable of displaying 1080p resolution,
             // so let's take that as a basis. 
             _renderTarget = new RenderTarget2D(GraphicsDevice, 1920, 1080);
+            
+            SwitchScene(_mainMenuScene);
         }
 
         protected override void UnloadContent()
@@ -144,13 +174,13 @@ namespace CustomTowerDefense
         {
             GraphicsDevice.SetRenderTarget(_renderTarget);
             GraphicsDevice.Clear(Color.Black);
-            _spriteBatch.Begin();
+            SpriteBatch.Begin();
             
             // The background must be painted first,
             // so don't put code above this line, unless you know what you are doing.
             FillBackgroundWithBackgroundSprites();
             
-            _spriteBatch.Draw(
+            SpriteBatch.Draw(
                 _smallScoutSprite,
                 _smallScoutShip.GetRectangle(),
                 null,
@@ -160,7 +190,7 @@ namespace CustomTowerDefense
                 SpriteEffects.None,
                 0);
             
-            _spriteBatch.Draw(
+            SpriteBatch.Draw(
                 _structureElementSprite,
                 _structureElement.GetRectangle(),
                 null,
@@ -171,20 +201,20 @@ namespace CustomTowerDefense
                 0);
             
             
-            _spriteBatch.DrawString(_defaultFont, "Text test", new Vector2(100, 100), Color.White);
+            SpriteBatch.DrawString(DefaultFont, "Text test", new Vector2(100, 100), Color.White);
             
-            _spriteBatch.End();
+            SpriteBatch.End();
             GraphicsDevice.SetRenderTarget(null);
 
             #region Specific scale rendering
 
             _scale = 1f / (1080f / _graphics.GraphicsDevice.Viewport.Height);
             GraphicsDevice.Clear(Color.Black);
-            _spriteBatch.Begin();
+            SpriteBatch.Begin();
             
-            _spriteBatch.Draw(_renderTarget, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, _scale, SpriteEffects.None, 0f);
+            SpriteBatch.Draw(_renderTarget, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, _scale, SpriteEffects.None, 0f);
 
-            _spriteBatch.End();
+            SpriteBatch.End();
 
             #endregion
 
@@ -197,7 +227,6 @@ namespace CustomTowerDefense
         {
             return KeyboardState.IsKeyDown(key) && PreviousKeyboardState.IsKeyUp(key);
         }
-        
         
         /// <summary>
         /// Fill the background with the necessary number of sprites depending on the screen size.
@@ -214,13 +243,38 @@ namespace CustomTowerDefense
                 currentBgSpritePosition.Y = 0;
                 while (currentBgSpritePosition.Y < _renderTarget.Height)
                 {
-                    _spriteBatch.Draw(_backgroundSprite, currentBgSpritePosition, Color.White);
+                    SpriteBatch.Draw(_backgroundSprite, currentBgSpritePosition, Color.White);
                     currentBgSpritePosition.Y += _backgroundSprite.Height;
                 }
                 
                 // we move to next column
                 currentBgSpritePosition.X += _backgroundSprite.Width;
             }
+        }
+        
+        
+        private void ChangeComponentState(GameComponent component, bool enabled)
+        {
+            component.Enabled = enabled;
+
+            if (component is DrawableGameComponent drawableGameComponent)
+            {
+                drawableGameComponent.Visible = enabled;
+            }
+        }
+        
+        public void SwitchScene(GameScene scene)
+        {
+            var usedComponents = scene.GetComponents();
+            
+            foreach (var component in Components)
+            {
+                var gameComponent = (GameComponent) component;
+                var isUsed = usedComponents.Contains(gameComponent);
+                ChangeComponentState(gameComponent, isUsed);
+            }
+            
+            PreviousKeyboardState = KeyboardState;
         }
     }
 }

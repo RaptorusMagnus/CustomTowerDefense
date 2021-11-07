@@ -1,4 +1,5 @@
 ﻿using System;
+using CustomTowerDefense.Helpers;
 using CustomTowerDefense.ValueObjects;
 using Microsoft.Xna.Framework;
 
@@ -76,7 +77,7 @@ namespace CustomTowerDefense.GameObjects
                                                CurrentCoordinate.Y + (int)moveVector.Y);
 
             CurrentCoordinate = newCoordinate;
-            RotationAngle = (float)Math.Atan2(moveVector.X, -moveVector.Y);
+            RotationAngle = AnglesHelper.VectorToAngle(moveVector);
         }
 
         #endregion // Methods

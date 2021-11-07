@@ -4,8 +4,11 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace CustomTowerDefense.GameObjects
 {
-/// <summary>
-    /// Base type for all objects in the game
+    /// <summary>
+    /// Base type for all drawable objects in the game.
+    /// A GameObject is the conceptual representation of a game element with all its properties.
+    /// Note that an object mustn't draw itself, and must not contain the physical texture linked to it.
+    /// The Game scene is in charge of actually drawing objects. 
     /// </summary>
     public class GameObject
     {
