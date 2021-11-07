@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Transactions;
+using System.Collections.Generic;
 using CustomTowerDefense.Components.Menu;
 using CustomTowerDefense.GameObjects;
 using CustomTowerDefense.GameObjects.SpaceShips;
+using CustomTowerDefense.Interfaces;
 using CustomTowerDefense.ValueObjects;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -16,7 +17,7 @@ namespace CustomTowerDefense
     /// </summary>
     public class TowerDefenseGame: Game
     {
-        private GraphicsDeviceManager _graphics;
+        private readonly GraphicsDeviceManager _graphics;
         public SpriteBatch SpriteBatch;
 
         public SpriteFont DefaultFont;
@@ -80,26 +81,10 @@ namespace CustomTowerDefense
             IsFixedTimeStep = true;
             _graphics.ApplyChanges();
             
-            MenuItemsComponent menuItems = new MenuItemsComponent(this, new Vector2(250, 250), Color.Red, Color.Yellow, 80);
-            menuItems.AddItem("START");
-            menuItems.AddItem("TOP SCORE");
-            menuItems.AddItem("CREDITS");
-            menuItems.AddItem("QUIT");
-            
-            MainMenuComponent mainMenuComponent = new MainMenuComponent(this, menuItems);
+            _mainMenuScene = new GameScene(this, new MainMenuComponent(this));
 
-            _mainMenuScene = new GameScene(this, mainMenuComponent, menuItems);
-            
-            foreach (var gameComponent in Components)
-            {
-                var component = (GameComponent) gameComponent;
-                ChangeComponentState(component, false);
-            }
-            
-            // TODO: finish the Game Scenes tutorial and implement the menu.
-            // https://www.ictdemy.com/csharp/monogame/csharp-programming-games-monogame-tetris/tetris-in-monogame-game-scene-management
-            
-            
+            // By default, to avoid any conflict, we disable everything
+            DisableAllComponents();
             
             // must be at the end because base.Initialize is calling LoadContent
             base.Initialize();
@@ -134,9 +119,12 @@ namespace CustomTowerDefense
                 Exit();
             }
 
+            // Important to handle keyboard inputs correctly see IsNewKey() method
             PreviousKeyboardState = KeyboardState;
             KeyboardState = Keyboard.GetState();
-            
+
+            #region To scratch
+
             _globalRotationAngle += 0.02f;
 
             if (goUp)
@@ -166,6 +154,8 @@ namespace CustomTowerDefense
             
             
             _smallScoutShip.Move(new Vector2(xMove, yDirection));
+
+            #endregion
             
             base.Update(gameTime);
         }
@@ -223,11 +213,43 @@ namespace CustomTowerDefense
         
         #endregion Standard Monogame methods
 
-        public bool NewKey(Keys key)
+        #region public methods accessible from other components
+        
+        /// <summary>
+        /// Returns true when the given key is marked as newly pressed.
+        /// Meaning that it was not pressed before, but is now down.
+        /// This method is useful to avoid multiple identical actions on a single long key press. 
+        /// </summary>
+        /// <param name="key">The key we want to check</param>
+        public bool IsNewKey(Keys key)
         {
             return KeyboardState.IsKeyDown(key) && PreviousKeyboardState.IsKeyUp(key);
         }
         
+        /// <summary>
+        /// Switches from current scene to the received scene.
+        /// Unused components are disabled and the requested ones are enabled.
+        /// </summary>
+        /// <param name="scene"></param>
+        public void SwitchScene(GameScene scene)
+        {
+            var usedComponents = scene.GetComponents();
+            
+            foreach (var component in Components)
+            {
+                var gameComponent = (GameComponent) component;
+                var isUsed = usedComponents.Contains(gameComponent);
+                ChangeComponentState(gameComponent, isUsed);
+            }
+            
+            // After a scene switch we reset the keyboard state to start with a brand new situation.
+            PreviousKeyboardState = KeyboardState;
+        }
+        
+        #endregion public methods
+
+        #region private methods
+
         /// <summary>
         /// Fill the background with the necessary number of sprites depending on the screen size.
         /// we could apply a patchwork of various sprites in the background (and it would be done in this method)
@@ -252,7 +274,6 @@ namespace CustomTowerDefense
             }
         }
         
-        
         private void ChangeComponentState(GameComponent component, bool enabled)
         {
             component.Enabled = enabled;
@@ -262,19 +283,16 @@ namespace CustomTowerDefense
                 drawableGameComponent.Visible = enabled;
             }
         }
-        
-        public void SwitchScene(GameScene scene)
+
+        private void DisableAllComponents()
         {
-            var usedComponents = scene.GetComponents();
-            
-            foreach (var component in Components)
+            foreach (var gameComponent in Components)
             {
-                var gameComponent = (GameComponent) component;
-                var isUsed = usedComponents.Contains(gameComponent);
-                ChangeComponentState(gameComponent, isUsed);
+                var component = (GameComponent) gameComponent;
+                ChangeComponentState(component, false);
             }
-            
-            PreviousKeyboardState = KeyboardState;
         }
+
+        #endregion
     }
 }

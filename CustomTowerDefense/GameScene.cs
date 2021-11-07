@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using CustomTowerDefense.Interfaces;
 using Microsoft.Xna.Framework;
 
 namespace CustomTowerDefense
@@ -19,21 +20,59 @@ namespace CustomTowerDefense
 
         #region Constructors
 
-        public GameScene(TowerDefenseGame mainGame, params GameComponent[] components)
+        // public GameScene(TowerDefenseGame mainGame, params GameComponent[] components)
+        // {
+        //     _towerDefenseGame = mainGame;
+        //     _components = new List<GameComponent>();
+        //     
+        //     foreach (var component in components)
+        //     {
+        //         AddComponent(component);
+        //     }
+        // }
+
+        public GameScene(TowerDefenseGame mainGame, IParentComponent parentComponent)
+            : this(mainGame, new List<IParentComponent> {parentComponent})
+        {
+        }
+        
+        public GameScene(TowerDefenseGame mainGame, IEnumerable<IParentComponent> components)
         {
             _towerDefenseGame = mainGame;
             _components = new List<GameComponent>();
             
             foreach (var component in components)
             {
-                AddComponent(component);
+                AddComponent((GameComponent)component);
+                
+                // TODO: for this first try we don't go recursive, but we should add the children of children until there is no more.
+                // Children components must be added as well
+                foreach (var childComponent in component.ChildComponents)
+                {
+                    AddComponent((GameComponent)childComponent);
+                }
             }
         }
+        
 
         #endregion
+
+        public void RemoveComponent(GameComponent component)
+        {
+            if (!_components.Contains(component))
+                return;
+
+            _components.Remove(component);
+        }
         
-        
-        public void AddComponent(GameComponent component)
+        public List<GameComponent> GetComponents()
+        {
+            return _components.ToList();
+        }
+
+        #region Private Method
+
+        private void AddComponent(GameComponent component)
         {
             if (_components.Contains(component))
                 return;
@@ -48,17 +87,6 @@ namespace CustomTowerDefense
             }
         }
 
-        public void RemoveComponent(GameComponent component)
-        {
-            if (!_components.Contains(component))
-                return;
-
-            _components.Remove(component);
-        }
-        
-        public List<GameComponent> GetComponents()
-        {
-            return _components.ToList();
-        }
+        #endregion
     }
 }

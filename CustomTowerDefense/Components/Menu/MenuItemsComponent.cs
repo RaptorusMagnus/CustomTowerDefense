@@ -41,21 +41,7 @@ namespace CustomTowerDefense.Components.Menu
             // selecting the first item when none is selected
             SelectedItem ??= menuItem;
         }
-        
-        public void SelectNext()
-        {
-            var index = _items.IndexOf(SelectedItem);
 
-            SelectedItem = (index < _items.Count - 1) ? _items[index + 1] : _items[0];
-        }
-        
-        public void SelectPrevious()
-        {
-            var index = _items.IndexOf(SelectedItem);
-
-            SelectedItem = index > 0 ? _items[index - 1] : _items.Last();
-        }
-        
         public override void Initialize()
         {
             base.Initialize();
@@ -68,9 +54,9 @@ namespace CustomTowerDefense.Components.Menu
 
         public override void Update(GameTime gameTime)
         {
-            if (_towerDefenseGame.NewKey(Keys.Up))
+            if (_towerDefenseGame.IsNewKey(Keys.Up))
                 SelectPrevious();
-            else if (_towerDefenseGame.NewKey(Keys.Down))
+            else if (_towerDefenseGame.IsNewKey(Keys.Down))
                 SelectNext();
             
             base.Update(gameTime);
@@ -94,5 +80,24 @@ namespace CustomTowerDefense.Components.Menu
             
             _towerDefenseGame.SpriteBatch.End();
         }
+
+        #region Private methods
+
+        private void SelectNext()
+        {
+            var index = _items.IndexOf(SelectedItem);
+
+            SelectedItem = (index < _items.Count - 1) ? _items[index + 1] : _items[0];
+        }
+
+        private void SelectPrevious()
+        {
+            var index = _items.IndexOf(SelectedItem);
+
+            SelectedItem = index > 0 ? _items[index - 1] : _items.Last();
+        }
+
+        #endregion
+
     }
 }

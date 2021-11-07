@@ -1,15 +1,25 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Collections.Generic;
+using CustomTowerDefense.Interfaces;
+using Microsoft.Xna.Framework;
 
 namespace CustomTowerDefense.Components.Menu
 {
-    public class MainMenuComponent: DrawableGameComponent
+    /// <summary>
+    /// Specific menu for main actions in the game.
+    /// The main menu must know its content and is in charge of dispatching actions.
+    /// </summary>
+    public class MainMenuComponent: DrawableGameComponent, IParentComponent
     {
-        private TowerDefenseGame _towerDefenseGame;
-        private MenuItemsComponent _menuItemsComponent;
+        private readonly MenuItemsComponent _menuItemsComponent;
         
-        public MainMenuComponent(TowerDefenseGame game, MenuItemsComponent menuItems) : base(game)
+        public MainMenuComponent(TowerDefenseGame game) : base(game)
         {
-            _towerDefenseGame = game;
+            var menuItems = new MenuItemsComponent(game, new Vector2(250, 250), Color.Red, Color.Yellow, 80);
+            menuItems.AddItem("START");
+            menuItems.AddItem("TOP SCORE");
+            menuItems.AddItem("CREDITS");
+            menuItems.AddItem("QUIT");
+            
             _menuItemsComponent = menuItems;
         }
 
@@ -31,6 +41,13 @@ namespace CustomTowerDefense.Components.Menu
         public override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
+        }
+
+        public List<GameComponent> ChildComponents => GetChildComponents();
+
+        private List<GameComponent> GetChildComponents()
+        {
+            return new() { _menuItemsComponent };
         }
     }
 }
