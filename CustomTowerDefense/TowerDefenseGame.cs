@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using CustomTowerDefense.Components;
 using CustomTowerDefense.Components.Menu;
 using CustomTowerDefense.GameObjects;
 using CustomTowerDefense.GameObjects.SpaceShips;
@@ -24,7 +25,7 @@ namespace CustomTowerDefense
         
         #region Our game sprites
         
-        private Texture2D _backgroundSprite;
+        
         private Texture2D _smallScoutSprite;
         private Texture2D _structureElementSprite;
         
@@ -37,12 +38,14 @@ namespace CustomTowerDefense
 
         #endregion
 
-        private RenderTarget2D _renderTarget;
+        public RenderTarget2D RenderTarget;
         private float _scale = 0.44444f;
         
         #region all game scenes available in the game
 
+        private GameScene _currentScene;
         private GameScene _mainMenuScene;
+        public GameScene BuildPathComponent;
         
         #endregion
         
@@ -82,6 +85,7 @@ namespace CustomTowerDefense
             _graphics.ApplyChanges();
             
             _mainMenuScene = new GameScene(this, new MainMenuComponent(this));
+            BuildPathComponent = new GameScene(this, new BuildPathComponent(this));
 
             // By default, to avoid any conflict, we disable everything
             DisableAllComponents();
@@ -95,14 +99,13 @@ namespace CustomTowerDefense
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: load all the textures in a dedicated method or class
-            _backgroundSprite = Content.Load<Texture2D>(@"Sprites\Starfield_Background");
             _smallScoutSprite = Content.Load<Texture2D>(@$"Sprites\{_smallScoutShip.TextureImagePath}");
             _structureElementSprite = Content.Load<Texture2D>(@$"Sprites\{_structureElement.TextureImagePath}");
             DefaultFont = Content.Load<SpriteFont>(@"Fonts\defaultFont");
 
             // Nowadays, even a low cost smartphone is capable of displaying 1080p resolution,
             // so let's take that as a basis. 
-            _renderTarget = new RenderTarget2D(GraphicsDevice, 1920, 1080);
+            RenderTarget = new RenderTarget2D(GraphicsDevice, 1920, 1080);
             
             SwitchScene(_mainMenuScene);
         }
@@ -113,8 +116,8 @@ namespace CustomTowerDefense
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
-                Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (_currentScene == _mainMenuScene &&
+                GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
             {
                 Exit();
             }
@@ -162,14 +165,10 @@ namespace CustomTowerDefense
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.SetRenderTarget(_renderTarget);
+            GraphicsDevice.SetRenderTarget(RenderTarget);
             GraphicsDevice.Clear(Color.Black);
             SpriteBatch.Begin();
-            
-            // The background must be painted first,
-            // so don't put code above this line, unless you know what you are doing.
-            FillBackgroundWithBackgroundSprites();
-            
+
             SpriteBatch.Draw(
                 _smallScoutSprite,
                 _smallScoutShip.GetRectangle(),
@@ -202,7 +201,7 @@ namespace CustomTowerDefense
             GraphicsDevice.Clear(Color.Black);
             SpriteBatch.Begin();
             
-            SpriteBatch.Draw(_renderTarget, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, _scale, SpriteEffects.None, 0f);
+            SpriteBatch.Draw(RenderTarget, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, _scale, SpriteEffects.None, 0f);
 
             SpriteBatch.End();
 
@@ -225,6 +224,11 @@ namespace CustomTowerDefense
         {
             return KeyboardState.IsKeyDown(key) && PreviousKeyboardState.IsKeyUp(key);
         }
+
+        public void SwitchBackToMainMenu()
+        {
+            SwitchScene(_mainMenuScene);
+        }
         
         /// <summary>
         /// Switches from current scene to the received scene.
@@ -241,6 +245,8 @@ namespace CustomTowerDefense
                 var isUsed = usedComponents.Contains(gameComponent);
                 ChangeComponentState(gameComponent, isUsed);
             }
+
+            _currentScene = scene;
             
             // After a scene switch we reset the keyboard state to start with a brand new situation.
             PreviousKeyboardState = KeyboardState;
@@ -250,30 +256,6 @@ namespace CustomTowerDefense
 
         #region private methods
 
-        /// <summary>
-        /// Fill the background with the necessary number of sprites depending on the screen size.
-        /// we could apply a patchwork of various sprites in the background (and it would be done in this method)
-        /// but in our case the task is easy, because we only have a single sprite to repeat. 
-        /// </summary>
-        private void FillBackgroundWithBackgroundSprites()
-        {
-            var currentBgSpritePosition = new Vector2(0, 0);
-
-            while(currentBgSpritePosition.X < _renderTarget.Width)
-            {
-                // we paint a full column from top to bottom.
-                currentBgSpritePosition.Y = 0;
-                while (currentBgSpritePosition.Y < _renderTarget.Height)
-                {
-                    SpriteBatch.Draw(_backgroundSprite, currentBgSpritePosition, Color.White);
-                    currentBgSpritePosition.Y += _backgroundSprite.Height;
-                }
-                
-                // we move to next column
-                currentBgSpritePosition.X += _backgroundSprite.Width;
-            }
-        }
-        
         private void ChangeComponentState(GameComponent component, bool enabled)
         {
             component.Enabled = enabled;
