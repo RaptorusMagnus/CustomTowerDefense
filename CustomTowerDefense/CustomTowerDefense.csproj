@@ -41,6 +41,9 @@
       <None Update="Content\Sprites\StructureElement_04.xnb">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="Content\Sprites\PathElement01.xnb">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

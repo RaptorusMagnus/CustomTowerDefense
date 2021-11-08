@@ -10,11 +10,13 @@ namespace CustomTowerDefense.Components
     {
         private TowerDefenseGame _towerDefenseGame; 
         private readonly BackgroundComponent _backgroundComponent;
+        private readonly TilesGridComponent _tilesGridComponent;
         
         public BuildPathComponent(TowerDefenseGame game) : base(game)
         {
             _towerDefenseGame = game;
             _backgroundComponent = new BackgroundComponent(game);
+            _tilesGridComponent = new TilesGridComponent(game);
         }
 
         public override void Update(GameTime gameTime)
@@ -29,7 +31,7 @@ namespace CustomTowerDefense.Components
         
         private List<GameComponent> GetChildComponents()
         {
-            return new() { _backgroundComponent };
+            return new() { _backgroundComponent, _tilesGridComponent };
         }
     }
 }
