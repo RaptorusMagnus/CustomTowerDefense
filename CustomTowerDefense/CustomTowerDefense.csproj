@@ -44,6 +44,9 @@
       <None Update="Content\Sprites\PathElement01.xnb">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="Content\Sprites\vortex_64_64.xnb">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

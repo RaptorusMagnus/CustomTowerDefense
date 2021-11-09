@@ -7,6 +7,7 @@
     public enum PreciseObjectType
     {
         PathElement,
+        Vortex,
         SmallScoutShip,
         StructureElement
     }

@@ -57,8 +57,7 @@ namespace CustomTowerDefense
         private float xDirection = 0;
         private float yDirection = 0;
         private bool goUp = false;
-        private float _globalRotationAngle = 0f;
-        
+
         #endregion
 
         public KeyboardState KeyboardState;
@@ -99,7 +98,7 @@ namespace CustomTowerDefense
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: load all the textures in a dedicated method or class
-            _smallScoutSprite = Content.Load<Texture2D>(@$"Sprites\{_smallScoutShip.TextureImagePath}");
+            _smallScoutSprite = Content.Load<Texture2D>(_smallScoutShip.TextureImagePath);
             _structureElementSprite = Content.Load<Texture2D>(@$"Sprites\{_structureElement.TextureImagePath}");
             DefaultFont = Content.Load<SpriteFont>(@"Fonts\defaultFont");
 
@@ -127,8 +126,6 @@ namespace CustomTowerDefense
             KeyboardState = Keyboard.GetState();
 
             #region To scratch
-
-            _globalRotationAngle += 0.02f;
 
             if (goUp)
             {
@@ -179,15 +176,7 @@ namespace CustomTowerDefense
                 SpriteEffects.None,
                 0);
             
-            SpriteBatch.Draw(
-                _structureElementSprite,
-                _structureElement.GetRectangle(),
-                null,
-                _structureElement.CurrentColorEffect,
-                _globalRotationAngle,
-                _structureElement.RotationVector,
-                SpriteEffects.None,
-                0);
+
             
             
             SpriteBatch.DrawString(DefaultFont, "Text test", new Vector2(100, 100), Color.White);
