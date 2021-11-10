@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace CustomTowerDefense.Components
 {
-    public class TilesGridComponent: DrawableGameComponent
+    public class PathGridComponent: DrawableGameComponent
     {
         private TowerDefenseGame _towerDefenseGame;
         private Texture2D _pathElementTile;
@@ -22,7 +22,7 @@ namespace CustomTowerDefense.Components
         private float _globalRotationAngle = 0f;
         private float _startVortexRotationAngle = 0f;
         
-        public TilesGridComponent(TowerDefenseGame game) : base(game)
+        public PathGridComponent(TowerDefenseGame game) : base(game)
         {
             _towerDefenseGame = game;
         }
