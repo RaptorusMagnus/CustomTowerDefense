@@ -70,7 +70,7 @@ namespace CustomTowerDefense.Components.Menu
             base.Draw(gameTime);
             
             _towerDefenseGame.SpriteBatch.Begin();
-            
+
             foreach (MenuItem item in _items)
             {
                 Color color = _itemColor;

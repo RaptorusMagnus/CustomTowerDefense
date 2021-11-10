@@ -13,6 +13,7 @@ namespace CustomTowerDefense.Components.Menu
     {
         private readonly MenuItemsComponent _menuItemsComponent;
         private readonly BackgroundComponent _backgroundComponent;
+        private readonly BackgroundFlyingShips _backgroundFlyingShips;
         
         public MainMenuComponent(TowerDefenseGame game) : base(game)
         {
@@ -24,6 +25,8 @@ namespace CustomTowerDefense.Components.Menu
             menuItems.AddItem("QUIT", Game.Exit);
 
             _backgroundComponent = new BackgroundComponent(game);
+            _backgroundFlyingShips = new BackgroundFlyingShips(game);
+            
             _menuItemsComponent = menuItems;
         }
 
@@ -51,7 +54,7 @@ namespace CustomTowerDefense.Components.Menu
 
         private List<GameComponent> GetChildComponents()
         {
-            return new() { _backgroundComponent, _menuItemsComponent };
+            return new() { _backgroundComponent, _backgroundFlyingShips, _menuItemsComponent };
         }
     }
 }

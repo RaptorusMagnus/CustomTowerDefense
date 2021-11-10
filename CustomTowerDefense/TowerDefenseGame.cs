@@ -20,21 +20,13 @@ namespace CustomTowerDefense
     {
         private readonly GraphicsDeviceManager _graphics;
         public SpriteBatch SpriteBatch;
-
         public SpriteFont DefaultFont;
         
-        #region Our game sprites
-        
-        
-        private Texture2D _smallScoutSprite;
-        private Texture2D _structureElementSprite;
-        
-        #endregion
 
         #region Graphical constants
 
-        private const int ASPECT_RATIO_WIDTH = 1200;
-        private const int ASPECT_RATIO_HEIGHT = 720;
+        public const int ASPECT_RATIO_WIDTH = 1200;
+        public const int ASPECT_RATIO_HEIGHT = 720;
 
         #endregion
 
@@ -47,17 +39,6 @@ namespace CustomTowerDefense
         private GameScene _mainMenuScene;
         public GameScene BuildPathComponent;
         
-        #endregion
-        
-        #region to scratch
-        
-        // TODO: this is just a test: the loading process must be elsewhere 
-        SmallScoutShip _smallScoutShip = new SmallScoutShip(new Coordinate(500, 500));
-        private StructureElement _structureElement = new StructureElement(new Coordinate(200, 200));
-        private float xDirection = 0;
-        private float yDirection = 0;
-        private bool goUp = false;
-
         #endregion
 
         public KeyboardState KeyboardState;
@@ -96,10 +77,7 @@ namespace CustomTowerDefense
         protected override void LoadContent()
         {
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-
-            // TODO: load all the textures in a dedicated method or class
-            _smallScoutSprite = Content.Load<Texture2D>(_smallScoutShip.TextureImagePath);
-            _structureElementSprite = Content.Load<Texture2D>(@$"Sprites\{_structureElement.TextureImagePath}");
+            
             DefaultFont = Content.Load<SpriteFont>(@"Fonts\defaultFont");
 
             // Nowadays, even a low cost smartphone is capable of displaying 1080p resolution,
@@ -125,38 +103,6 @@ namespace CustomTowerDefense
             PreviousKeyboardState = KeyboardState;
             KeyboardState = Keyboard.GetState();
 
-            #region To scratch
-
-            if (goUp)
-            {
-                if (yDirection > -1)
-                {
-                    yDirection -= 0.02f;
-                }
-                else
-                {
-                    goUp = false;
-                }
-            }
-            else
-            {
-                if (yDirection < 1)
-                {
-                    yDirection += 0.02f;
-                }
-                else
-                {
-                    goUp = true;
-                }
-            }
-
-            var xMove = (float)Math.Cos(yDirection) * 2;
-            
-            
-            _smallScoutShip.Move(new Vector2(xMove, yDirection));
-
-            #endregion
-            
             base.Update(gameTime);
         }
 
@@ -164,24 +110,7 @@ namespace CustomTowerDefense
         {
             GraphicsDevice.SetRenderTarget(RenderTarget);
             GraphicsDevice.Clear(Color.Black);
-            SpriteBatch.Begin();
 
-            SpriteBatch.Draw(
-                _smallScoutSprite,
-                _smallScoutShip.GetRectangle(),
-                null,
-                _smallScoutShip.CurrentColorEffect,
-                _smallScoutShip.RotationAngle,
-                _smallScoutShip.RotationVector,
-                SpriteEffects.None,
-                0);
-            
-
-            
-            
-            SpriteBatch.DrawString(DefaultFont, "Text test", new Vector2(100, 100), Color.White);
-            
-            SpriteBatch.End();
             GraphicsDevice.SetRenderTarget(null);
 
             #region Specific scale rendering
