@@ -1,4 +1,5 @@
-﻿using CustomTowerDefense.GameObjects;
+﻿using System.Xml.Linq;
+using CustomTowerDefense.GameObjects;
 using CustomTowerDefense.ValueObjects;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -19,6 +20,7 @@ namespace CustomTowerDefense.Components
         
         // for the vortex
         private float _globalRotationAngle = 0f;
+        private float _startVortexRotationAngle = 0f;
         
         public TilesGridComponent(TowerDefenseGame game) : base(game)
         {
@@ -29,6 +31,7 @@ namespace CustomTowerDefense.Components
         {
             _startVortex = new Vortex(new Coordinate(32, 32));
             _endVortex = new Vortex(new Coordinate(1168, 32));
+            _endVortex.CurrentColorEffect = Color.Red;
         }
 
         protected override void LoadContent()
@@ -40,6 +43,7 @@ namespace CustomTowerDefense.Components
 
         public override void Update(GameTime gameTime)
         {
+            _startVortexRotationAngle -= 0.01f;
             _globalRotationAngle += 0.01f;
         }
 
@@ -57,7 +61,7 @@ namespace CustomTowerDefense.Components
                 _startVortex.GetRectangle(),
                 null,
                 _startVortex.CurrentColorEffect,
-                _globalRotationAngle,
+                _startVortexRotationAngle,
                 _startVortex.RotationVector,
                 SpriteEffects.None,
                 0);
@@ -65,7 +69,7 @@ namespace CustomTowerDefense.Components
             _towerDefenseGame.SpriteBatch.Draw(
                 _vortexTile,
                 _endVortex.GetRectangle(),
-                null,
+                 null,
                 _endVortex.CurrentColorEffect,
                 _globalRotationAngle,
                 _endVortex.RotationVector,
