@@ -16,3 +16,5 @@ This project was designed with the following goals in mind:
 https://www.ictdemy.com/csharp/monogame/csharp-programming-games-monogame-tetris
 * MonoGame from scratch tutorial video for Experienced programmers
 https://youtu.be/-5ELPrIJNvA
+* Free ebook: MonoGame succintly
+https://www.syncfusion.com/succinctly-free-ebooks/monogame-succinctly
