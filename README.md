@@ -18,3 +18,5 @@ https://www.ictdemy.com/csharp/monogame/csharp-programming-games-monogame-tetris
 https://youtu.be/-5ELPrIJNvA
 * Free ebook: MonoGame succintly
 https://www.syncfusion.com/succinctly-free-ebooks/monogame-succinctly
+* Game state management (sample application from Microsoft)
+https://github.com/SimonDarksideJ/XNAGameStudio/wiki/Game-State-Management-(Mango,-C%23VB)
