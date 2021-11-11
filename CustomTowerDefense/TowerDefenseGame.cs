@@ -25,13 +25,14 @@ namespace CustomTowerDefense
 
         #region Graphical constants
 
+        // For standard 1.77777 aspect ratio
         public const int ASPECT_RATIO_WIDTH = 1200;
         public const int ASPECT_RATIO_HEIGHT = 720;
 
         #endregion
 
         public RenderTarget2D RenderTarget;
-        private float _scale = 0.44444f;
+        private float _scale;
         
         #region all game scenes available in the game
 
