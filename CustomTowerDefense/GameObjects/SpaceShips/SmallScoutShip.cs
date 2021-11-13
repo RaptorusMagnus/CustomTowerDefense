@@ -1,4 +1,4 @@
-﻿using CustomTowerDefense.ValueObjects;
+﻿using CustomTowerDefense.Shared;
 
 namespace CustomTowerDefense.GameObjects.SpaceShips
 {

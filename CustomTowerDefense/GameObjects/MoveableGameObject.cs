@@ -1,6 +1,6 @@
 ﻿using System;
 using CustomTowerDefense.Helpers;
-using CustomTowerDefense.ValueObjects;
+using CustomTowerDefense.Shared;
 using Microsoft.Xna.Framework;
 
 namespace CustomTowerDefense.GameObjects

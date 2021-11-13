@@ -1,4 +1,4 @@
-﻿using CustomTowerDefense.ValueObjects;
+﻿using CustomTowerDefense.Shared;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 

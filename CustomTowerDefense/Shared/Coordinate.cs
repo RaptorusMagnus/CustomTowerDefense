@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace CustomTowerDefense.ValueObjects
+namespace CustomTowerDefense.Shared
 {
     /// <summary>
     /// Simple immutable X-Y coordinate.

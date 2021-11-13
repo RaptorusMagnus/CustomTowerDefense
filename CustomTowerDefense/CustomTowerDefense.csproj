@@ -47,6 +47,13 @@
       <None Update="Content\Sprites\vortex_64_64.xnb">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="Content\Sprites\gradient.xnb">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\GameStateManagement\GameStateManagement.csproj" />
     </ItemGroup>
 
 </Project>
