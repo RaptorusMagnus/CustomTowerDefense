@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using CustomTowerDefense.GameObjects;
 using CustomTowerDefense.Shared;
 using JetBrains.Annotations;
@@ -22,20 +23,16 @@ namespace CustomTowerDefense.Helpers
         {
             var currentPath = new GridPath(0, 0, gameGrid.MaxX, gameGrid.MaxY);
             currentPath.AddCoordinate(start);
-
-            // For optimization purpose we'll keep the already known paths,
-            // so that the recursive calls don't recompute an already calculated path (from another sibling work)
-            var alreadyKnownPath = new Dictionary<Coordinate, GridPath>();
-            
-            var shortestAdditionalPath = GetShortestAdditionalPath(gameGrid, end, currentPath, alreadyKnownPath);
+            var alreadyKnownPaths = new Dictionary<Coordinate, GridPath>();
+            var shortestAdditionalPath = GetShortestAdditionalPath(gameGrid, end, currentPath, alreadyKnownPaths);
 
             if (shortestAdditionalPath == null)
                 return  null;
             
             currentPath.AddPath(shortestAdditionalPath);
+            
             return currentPath;
         }
-        
         
         /// <summary>
         /// Recursive method finding the shortest path to reach the end coordinate.
@@ -53,9 +50,6 @@ namespace CustomTowerDefense.Helpers
             if (start == null)
                 throw new ArgumentException("The received path must at least contain the starting point.");
 
-            if (alreadyKnownPaths.ContainsKey(start.Value))
-                return alreadyKnownPaths[start.Value];
-            
             var directlyReachableCoordinates = GetDirectlyReachableCoordinates(gameGrid, start.Value);
 
             // Exit condition when nothing is reachable from the starting point.
@@ -67,27 +61,38 @@ namespace CustomTowerDefense.Helpers
             {
                 var additionalPath = new GridPath(0, 0, gameGrid.MaxX, gameGrid.MaxY);
                 additionalPath.AddCoordinate(end);
+                
+                if (!alreadyKnownPaths.ContainsKey(start.Value))
+                {
+                    alreadyKnownPaths.Add(start.Value, additionalPath);
+                    //Console.WriteLine($"Path is now known from {start.Value} --> {string.Join("; ", additionalPath.Coordinates)}");
+                }
+                
                 return additionalPath;
             }
 
             // No exit condition, so let's prepare the recursive call.
             // To avoid looping we never take a reachable sibling that is already in the path.
-            var siblingsToTest = directlyReachableCoordinates.Except(currentPath.Coordinates);
+            var siblingsToTest = directlyReachableCoordinates.Except(currentPath.Coordinates).ToList();
             
             GridPath thePathToKeep = null;
-            Coordinate bestSibling;
             
             foreach (var currentSiblingCoordinate in siblingsToTest)
             {
-                // for the recursive call we must add current sibling in the existing path.
-                var currentPathClone = currentPath.GetClone();
-                currentPathClone.AddCoordinate(currentSiblingCoordinate);
-                
-                var currentSiblingPath = GetShortestAdditionalPath(gameGrid, end, currentPathClone, alreadyKnownPaths);
+                GridPath currentSiblingPath;
 
-                // In all cases we want to keep track of this calculated short path to avoid recomputing it. 
-                if (!alreadyKnownPaths.ContainsKey(currentSiblingCoordinate))
-                    alreadyKnownPaths.Add(currentSiblingCoordinate, currentSiblingPath);
+                if (alreadyKnownPaths.ContainsKey(currentSiblingCoordinate))
+                {
+                    currentSiblingPath = alreadyKnownPaths[currentSiblingCoordinate];
+                }
+                else
+                {
+                    // for the recursive call we must add current sibling in the existing path.
+                    var currentPathClone = currentPath.GetClone();
+                    currentPathClone.AddCoordinate(currentSiblingCoordinate);
+            
+                    currentSiblingPath = GetShortestAdditionalPath(gameGrid, end, currentPathClone, alreadyKnownPaths);
+                }
                 
                 if (currentSiblingPath != null &&
                     (
@@ -101,6 +106,13 @@ namespace CustomTowerDefense.Helpers
                 }
             }
 
+            // if a valid short path has been found, we keep it to avoid computing it again.
+            if (thePathToKeep != null && !alreadyKnownPaths.ContainsKey(start.Value))
+            {
+                alreadyKnownPaths.Add(start.Value, thePathToKeep);
+                //Console.WriteLine($"Path is now known from {start.Value} --> {string.Join("; ", thePathToKeep.Coordinates)}");
+            }
+            
             return thePathToKeep;
         }
         

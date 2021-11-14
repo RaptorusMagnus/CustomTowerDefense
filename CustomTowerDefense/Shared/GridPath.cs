@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using CustomTowerDefense.Helpers;
 using JetBrains.Annotations;
 
 namespace CustomTowerDefense.Shared
@@ -70,6 +71,23 @@ namespace CustomTowerDefense.Shared
                 throw new ArgumentException($"Coordinate [{newCoordinate.X}, {newCoordinate.Y}] is out of the grid. Impossible to add it to the path");
             }
 
+            if (Coordinates.Count > 0)
+            {
+                // we must check that the added coordinate is in the continuity of previous path
+                var pathEnd = Coordinates.Last();
+
+                var isDirectlyReachable =
+                    pathEnd.RightSibling.Equals(newCoordinate) ||
+                    pathEnd.LeftSibling.Equals(newCoordinate) ||
+                    pathEnd.TopSibling.Equals(newCoordinate) ||
+                    pathEnd.BottomSibling.Equals(newCoordinate);
+
+                if (!isDirectlyReachable)
+                {
+                    throw new ArgumentException($"You are trying to add a non continuous coordinate {newCoordinate} to the following path : {string.Join("; ", Coordinates)} ");
+                }
+            }
+            
             Coordinates.Add(newCoordinate);
         }
 

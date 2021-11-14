@@ -33,9 +33,6 @@
       <None Update="Content\Sprites\Spaceship_0002_small.xnb">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="Content\Sprites\StructureElement_01.xnb">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
       <None Update="Content\Fonts\defaultFont.xnb">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
@@ -49,6 +46,9 @@
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
       <None Update="Content\Sprites\gradient.xnb">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Content\Sprites\structure64_1.xnb">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

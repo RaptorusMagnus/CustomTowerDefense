@@ -20,6 +20,7 @@ namespace CustomTowerDefense.Screens
         // Textures used in this specific screen 
         private Texture2D _pathElementTile;
         private Texture2D _vortexTile;
+        private Texture2D _structureElementTile;
         
         float _pauseAlpha;
 
@@ -33,6 +34,9 @@ namespace CustomTowerDefense.Screens
 
         // The path between the two vortexes
         private List<PathElement> _path;
+        
+        // The structure on which we can put defense towers
+        private List<StructureElement> _structureElements;
         
         // for the vortex
         private float _endVortexRotationAngle = 0f;
@@ -51,13 +55,36 @@ namespace CustomTowerDefense.Screens
             _startVortex = new Vortex(_gameGrid.GetPixelCenterFromLogicalCoordinate(startVortexLogicalCoordinate));
             _gameGrid.AddGameObject(_startVortex, startVortexLogicalCoordinate);
 
-            var endVortexLogicalCoordinate = new Coordinate(11, 0);
+            var endVortexLogicalCoordinate = new Coordinate(11, 6);
             _endVortex = new Vortex(_gameGrid.GetPixelCenterFromLogicalCoordinate(endVortexLogicalCoordinate))
                          {
                              CurrentColorEffect = Color.Red
                          };
             _gameGrid.AddGameObject(_endVortex, endVortexLogicalCoordinate);
 
+            // structure elements
+            _structureElements = new List<StructureElement>();
+            var structureElementLogicalCoordinate = new Coordinate(2, 0);
+            _structureElements.Add(new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(structureElementLogicalCoordinate)));
+            _gameGrid.AddGameObject(_structureElements[0], structureElementLogicalCoordinate);
+            
+            structureElementLogicalCoordinate = new Coordinate(11, 5);
+            _structureElements.Add(new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(structureElementLogicalCoordinate)));
+            _gameGrid.AddGameObject(_structureElements[1], structureElementLogicalCoordinate);
+            
+            structureElementLogicalCoordinate = new Coordinate(10, 5);
+            _structureElements.Add(new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(structureElementLogicalCoordinate)));
+            _gameGrid.AddGameObject(_structureElements[2], structureElementLogicalCoordinate);
+            
+            structureElementLogicalCoordinate = new Coordinate(9, 3);
+            _structureElements.Add(new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(structureElementLogicalCoordinate)));
+            _gameGrid.AddGameObject(_structureElements[3], structureElementLogicalCoordinate);
+            
+            structureElementLogicalCoordinate = new Coordinate(0, 1);
+            _structureElements.Add(new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(structureElementLogicalCoordinate)));
+            _gameGrid.AddGameObject(_structureElements[4], structureElementLogicalCoordinate);
+            
+            // We must calculate the shortest way after the structural elements.
             var path = ShortestPathHelper.GetShortestPath(_gameGrid, startVortexLogicalCoordinate, endVortexLogicalCoordinate);
 
             if (path == null)
@@ -98,6 +125,7 @@ namespace CustomTowerDefense.Screens
 
                 _pathElementTile = _contentManager.Load<Texture2D>(@"Sprites\PathElement01");
                 _vortexTile = _contentManager.Load<Texture2D>(@"Sprites\vortex_64_64");
+                _structureElementTile = _contentManager.Load<Texture2D>(@"Sprites\Structure64_1");
             }
         }
 
@@ -159,6 +187,21 @@ namespace CustomTowerDefense.Screens
                 _endVortex.RotationVector,
                 SpriteEffects.None,
                 0);
+            
+            // We must draw all structure elements
+            foreach (var structureElement in _structureElements)
+            {
+                ScreenManager.SpriteBatch.Draw(
+                    _structureElementTile,
+                    structureElement.GetRectangle(),
+                    null,
+                    structureElement.CurrentColorEffect,
+                    0f,
+                    structureElement.RotationVector,
+                    SpriteEffects.None,
+                    0);
+            }
+                
             
             // We must draw all path elements between the two vortexes
             foreach (var pathElement in _path)
