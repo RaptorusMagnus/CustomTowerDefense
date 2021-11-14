@@ -12,6 +12,11 @@ namespace CustomTowerDefense.Shared
         public float X { get; }
         public float Y { get; }
 
+        public Coordinate LeftSibling => new Coordinate(X - 1, Y);
+        public Coordinate RightSibling => new Coordinate(X + 1, Y);
+        public Coordinate TopSibling => new Coordinate(X, Y - 1);
+        public Coordinate BottomSibling => new Coordinate(X, Y + 1);
+        
         public Coordinate(float x, float y)
         {
             X = x;
@@ -33,7 +38,7 @@ namespace CustomTowerDefense.Shared
 
             var receivedCoordinate = (Coordinate)obj;
 
-            return this.X.Equals(receivedCoordinate.X)  && this.Y.Equals(receivedCoordinate.Y);
+            return this.X.Equals(receivedCoordinate.X) && this.Y.Equals(receivedCoordinate.Y);
         }
 
         public override int GetHashCode()

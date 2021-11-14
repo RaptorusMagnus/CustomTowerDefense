@@ -7,19 +7,14 @@ using GameStateManagement;
 namespace CustomTowerDefense.Screens.Menu
 {
     /// <summary>
-    /// Helper class represents a single entry in a MenuScreen. By default this
-    /// just draws the entry text string, but it can be customized to display menu
-    /// entries in different ways. This also provides an event that will be raised
-    /// when the menu entry is selected.
+    /// This helper class represents a single entry in a MenuScreen.
+    /// By default it just draws the entry text string, but it can be customized to display menu
+    /// entries in different ways.
+    /// This class also provides an event that will be raised when the menu entry is selected.
     /// </summary>
     class MenuEntry
     {
         #region Fields
-
-        /// <summary>
-        /// The text rendered for this entry.
-        /// </summary>
-        string text;
 
         /// <summary>
         /// Tracks a fading selection effect on the entry.
@@ -27,13 +22,7 @@ namespace CustomTowerDefense.Screens.Menu
         /// <remarks>
         /// The entries transition out of the selection effect when they are deselected.
         /// </remarks>
-        float selectionFade;
-
-        /// <summary>
-        /// The position at which the entry is drawn. This is set by the MenuScreen
-        /// each frame in Update.
-        /// </summary>
-        Vector2 position;
+        private float _selectionFade;
 
         #endregion
 
@@ -43,22 +32,13 @@ namespace CustomTowerDefense.Screens.Menu
         /// <summary>
         /// Gets or sets the text of this menu entry.
         /// </summary>
-        public string Text
-        {
-            get { return text; }
-            set { text = value; }
-        }
+        public string Text { get; set; }
 
 
         /// <summary>
         /// Gets or sets the position at which to draw this menu entry.
         /// </summary>
-        public Vector2 Position
-        {
-            get { return position; }
-            set { position = value; }
-        }
-
+        public Vector2 Position { get; set; }
 
         #endregion
 
@@ -76,8 +56,7 @@ namespace CustomTowerDefense.Screens.Menu
         /// </summary>
         protected internal virtual void OnSelectEntry(PlayerIndex playerIndex)
         {
-            if (Selected != null)
-                Selected(this, new PlayerIndexEventArgs(playerIndex));
+            Selected?.Invoke(this, new PlayerIndexEventArgs(playerIndex));
         }
 
 
@@ -91,7 +70,7 @@ namespace CustomTowerDefense.Screens.Menu
         /// </summary>
         public MenuEntry(string text)
         {
-            this.text = text;
+            this.Text = text;
         }
 
 
@@ -117,9 +96,9 @@ namespace CustomTowerDefense.Screens.Menu
             float fadeSpeed = (float)gameTime.ElapsedGameTime.TotalSeconds * 4;
 
             if (isSelected)
-                selectionFade = Math.Min(selectionFade + fadeSpeed, 1);
+                _selectionFade = Math.Min(_selectionFade + fadeSpeed, 1);
             else
-                selectionFade = Math.Max(selectionFade - fadeSpeed, 0);
+                _selectionFade = Math.Max(_selectionFade - fadeSpeed, 0);
         }
 
 
@@ -142,7 +121,7 @@ namespace CustomTowerDefense.Screens.Menu
             
             float pulsate = (float)Math.Sin(time * 6) + 1;
 
-            float scale = 1 + pulsate * 0.05f * selectionFade;
+            float scale = 1 + pulsate * 0.05f * _selectionFade;
 
             // Modify the alpha to fade text out during transitions.
             color *= screen.TransitionAlpha;
@@ -154,7 +133,7 @@ namespace CustomTowerDefense.Screens.Menu
 
             Vector2 origin = new Vector2(0, font.LineSpacing / 2);
 
-            spriteBatch.DrawString(font, text, position, color, 0,
+            spriteBatch.DrawString(font, Text, Position, color, 0,
                                    origin, scale, SpriteEffects.None, 0);
         }
 

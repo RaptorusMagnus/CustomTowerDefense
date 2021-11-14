@@ -18,6 +18,11 @@ namespace CustomTowerDefense
         // For standard 1.77777 aspect ratio
         public const int ASPECT_RATIO_WIDTH = 1200;
         public const int ASPECT_RATIO_HEIGHT = 720;
+        
+        /// <summary>
+        /// Standard tiles size in this game.
+        /// </summary>
+        public const int TILES_SIZE = 64;
 
         #endregion
 

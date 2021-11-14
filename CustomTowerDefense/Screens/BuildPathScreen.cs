@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using CustomTowerDefense.GameObjects;
+using CustomTowerDefense.Helpers;
 using CustomTowerDefense.Shared;
 using GameStateManagement;
 using Microsoft.Xna.Framework;
@@ -19,12 +22,17 @@ namespace CustomTowerDefense.Screens
         private Texture2D _vortexTile;
         
         float _pauseAlpha;
+
+        private LogicalGameGridSingle _gameGrid;
         
         // Where the enemies will come from
         private Vortex _startVortex;
         
         // Where the enemies will go
         private Vortex _endVortex;
+
+        // The path between the two vortexes
+        private List<PathElement> _path;
         
         // for the vortex
         private float _endVortexRotationAngle = 0f;
@@ -37,13 +45,43 @@ namespace CustomTowerDefense.Screens
 
         public BuildPathScreen()
         {
-            _startVortex = new Vortex(new Coordinate(32, 32));
-            _endVortex = new Vortex(new Coordinate(768, 32));
-            _endVortex.CurrentColorEffect = Color.Red;
+            _gameGrid = new LogicalGameGridSingle(TowerDefenseGame.TILES_SIZE, 0, 0);
+            
+            var startVortexLogicalCoordinate = new Coordinate(0, 0);
+            _startVortex = new Vortex(_gameGrid.GetPixelCenterFromLogicalCoordinate(startVortexLogicalCoordinate));
+            _gameGrid.AddGameObject(_startVortex, startVortexLogicalCoordinate);
+
+            var endVortexLogicalCoordinate = new Coordinate(11, 0);
+            _endVortex = new Vortex(_gameGrid.GetPixelCenterFromLogicalCoordinate(endVortexLogicalCoordinate))
+                         {
+                             CurrentColorEffect = Color.Red
+                         };
+            _gameGrid.AddGameObject(_endVortex, endVortexLogicalCoordinate);
+
+            var path = ShortestPathHelper.GetShortestPath(_gameGrid, startVortexLogicalCoordinate, endVortexLogicalCoordinate);
+
+            if (path == null)
+                throw new Exception("The end vortex is unreachable and this should never be the case at initialization.");
+
+            _path = new List<PathElement>();
+            
+            foreach (var currentCoordinate in path.Coordinates)
+            {
+                // The full path includes the two vortexes but we don't want them to build the visual in between path elements. 
+                if (currentCoordinate.Equals(startVortexLogicalCoordinate) ||
+                    currentCoordinate.Equals(endVortexLogicalCoordinate))
+                {
+                    continue;
+                }
+                
+                _path.Add(new PathElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(currentCoordinate)));
+            }
         }
         
         #endregion
-        
+
+        #region Load/unload content
+
         /// <summary>
         /// Loads graphics content for this screen. The background texture can be quite
         /// big, so we use our own local ContentManager to load it. This allows us
@@ -71,6 +109,8 @@ namespace CustomTowerDefense.Screens
             _contentManager.Unload();
         }
 
+        #endregion
+
         #region Update and Draw
 
         /// <summary>
@@ -97,8 +137,7 @@ namespace CustomTowerDefense.Screens
 
         public override void Draw(GameTime gameTime)
         {
-            ScreenManager.GraphicsDevice.Clear(ClearOptions.Target, Color.Black, 0, 0);
-            
+            // we must not clear the background here because we want a standard background screen applied.
             ScreenManager.SpriteBatch.Begin();
                 
             ScreenManager.SpriteBatch.Draw(
@@ -121,7 +160,19 @@ namespace CustomTowerDefense.Screens
                 SpriteEffects.None,
                 0);
             
-            ScreenManager.SpriteBatch.Draw(_pathElementTile, new Vector2(65, 0), Color.White);
+            // We must draw all path elements between the two vortexes
+            foreach (var pathElement in _path)
+            {
+                ScreenManager.SpriteBatch.Draw(
+                    _pathElementTile,
+                    pathElement.GetRectangle(),
+                    null,
+                    pathElement.CurrentColorEffect,
+                    0f,
+                    pathElement.RotationVector,
+                    SpriteEffects.None,
+                    0);
+            }
             
             ScreenManager.SpriteBatch.End();
             

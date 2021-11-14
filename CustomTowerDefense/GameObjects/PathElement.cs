@@ -7,8 +7,8 @@ namespace CustomTowerDefense.GameObjects
     /// </summary>
     public class PathElement: GameObject
     {
-        private const int WIDTH = 37;
-        private const int HEIGHT = 37;
+        private const int WIDTH = 64;
+        private const int HEIGHT = 64;
         private const string IMAGE_NAME = "PathElement";
         
         public PathElement(Coordinate coordinate) :

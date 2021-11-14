@@ -48,6 +48,7 @@ namespace CustomTowerDefense.Screens.Menu
                 ScreenManager,
                 true,
                 e.PlayerIndex,
+                new BackgroundScreen(),
                 new BuildPathScreen());
         }
 
