@@ -28,24 +28,43 @@ namespace CustomTowerDefense
 
         private float _scale;
         
-        private readonly ScreenManager _screenManager;
+        private ScreenManager _screenManager;
 
         public TowerDefenseGame()
         {
+            // The initialization of the graphics device manager must be done in the constructor,
+            // because it is requested by the Run() method called right away in the Program Class.
+            // But the modifications done on the options of the GraphicsDeviceManager must be done in the Initialize() method.
+            // Otherwise they are overwritten.
             _graphics = new GraphicsDeviceManager(this);
+        }
+        
+        /// <summary>
+        /// The initialise method is the first one called by the Run() method,
+        /// And some  objects like the GraphicsDeviceManager are not correctly initialized until we call the base.Initialize.
+        /// So, this method is the good place to initialise the game and possibly change graphical options.
+        /// </summary>
+        protected override void Initialize()
+        {
+            // Root directory is used by the Screen manager, we must initialize it before. 
             Content.RootDirectory = "Content";
             
-            // Create the screen factory and add it to the Services
-            var screenFactory = new ScreenFactory();
-            Services.AddService(typeof(IScreenFactory), screenFactory);
-            
-            // Create the screen manager component.
+            // As it is built the screen manager must be added before the base.initialise,
+            // because the base.Initialize is calling the loadContent and the sprite batch is not ready yet.
             _screenManager = new ScreenManager(this);
             Components.Add(_screenManager);
+            
+            // Must be done first to initialize the GraphicsDeviceManager
+            base.Initialize();
+
+            var screenFactory = new ScreenFactory();
+            Services.AddService(typeof(IScreenFactory), screenFactory);
             
             IsMouseVisible = true;
             IsFixedTimeStep = true;
             
+            _graphics.PreferredBackBufferWidth = ASPECT_RATIO_WIDTH;
+            _graphics.PreferredBackBufferHeight = ASPECT_RATIO_HEIGHT;
             _graphics.IsFullScreen = false;
             _graphics.ApplyChanges();
             
