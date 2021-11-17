@@ -65,23 +65,23 @@ namespace CustomTowerDefense.Screens
             // structure elements
             _structureElements = new List<StructureElement>();
             var structureElementLogicalCoordinate = new Coordinate(2, 0);
-            _structureElements.Add(new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(structureElementLogicalCoordinate)));
+            _structureElements.Add(new StructureElement(_gameGrid.GetTopLeftPixelFromLogicalCoordinate(structureElementLogicalCoordinate)));
             _gameGrid.AddGameObject(_structureElements[0], structureElementLogicalCoordinate);
             
             structureElementLogicalCoordinate = new Coordinate(11, 5);
-            _structureElements.Add(new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(structureElementLogicalCoordinate)));
+            _structureElements.Add(new StructureElement(_gameGrid.GetTopLeftPixelFromLogicalCoordinate(structureElementLogicalCoordinate)));
             _gameGrid.AddGameObject(_structureElements[1], structureElementLogicalCoordinate);
             
             structureElementLogicalCoordinate = new Coordinate(10, 5);
-            _structureElements.Add(new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(structureElementLogicalCoordinate)));
+            _structureElements.Add(new StructureElement(_gameGrid.GetTopLeftPixelFromLogicalCoordinate(structureElementLogicalCoordinate)));
             _gameGrid.AddGameObject(_structureElements[2], structureElementLogicalCoordinate);
             
             structureElementLogicalCoordinate = new Coordinate(9, 3);
-            _structureElements.Add(new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(structureElementLogicalCoordinate)));
+            _structureElements.Add(new StructureElement(_gameGrid.GetTopLeftPixelFromLogicalCoordinate(structureElementLogicalCoordinate)));
             _gameGrid.AddGameObject(_structureElements[3], structureElementLogicalCoordinate);
             
             structureElementLogicalCoordinate = new Coordinate(0, 1);
-            _structureElements.Add(new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(structureElementLogicalCoordinate)));
+            _structureElements.Add(new StructureElement(_gameGrid.GetTopLeftPixelFromLogicalCoordinate(structureElementLogicalCoordinate)));
             _gameGrid.AddGameObject(_structureElements[4], structureElementLogicalCoordinate);
             
             // We must calculate the shortest way after the structural elements.
@@ -101,7 +101,7 @@ namespace CustomTowerDefense.Screens
                     continue;
                 }
                 
-                _path.Add(new PathElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(currentCoordinate)));
+                _path.Add(new PathElement(_gameGrid.GetTopLeftPixelFromLogicalCoordinate(currentCoordinate)));
             }
         }
         
@@ -174,7 +174,7 @@ namespace CustomTowerDefense.Screens
                 null,
                 _startVortex.CurrentColorEffect,
                 _startVortexRotationAngle,
-                _startVortex.RotationVector,
+                _startVortex.RotationOrigin,
                 SpriteEffects.None,
                 0);
             
@@ -184,7 +184,7 @@ namespace CustomTowerDefense.Screens
                 null,
                 _endVortex.CurrentColorEffect,
                 _endVortexRotationAngle,
-                _endVortex.RotationVector,
+                _endVortex.RotationOrigin,
                 SpriteEffects.None,
                 0);
             
@@ -193,13 +193,8 @@ namespace CustomTowerDefense.Screens
             {
                 ScreenManager.SpriteBatch.Draw(
                     _structureElementTile,
-                    structureElement.GetRectangle(),
-                    null,
-                    structureElement.CurrentColorEffect,
-                    0f,
-                    structureElement.RotationVector,
-                    SpriteEffects.None,
-                    0);
+                    structureElement.CurrentCoordinate.GetVector2(),
+                    Color.White);
             }
                 
             
@@ -208,13 +203,8 @@ namespace CustomTowerDefense.Screens
             {
                 ScreenManager.SpriteBatch.Draw(
                     _pathElementTile,
-                    pathElement.GetRectangle(),
-                    null,
-                    pathElement.CurrentColorEffect,
-                    0f,
-                    pathElement.RotationVector,
-                    SpriteEffects.None,
-                    0);
+                    pathElement.CurrentCoordinate.GetVector2(),
+                    Color.White);
             }
             
             ScreenManager.SpriteBatch.End();

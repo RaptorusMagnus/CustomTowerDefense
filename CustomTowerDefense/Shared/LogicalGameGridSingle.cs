@@ -67,6 +67,20 @@ namespace CustomTowerDefense
         #endregion
 
         /// <summary>
+        /// Returns a physical top left pixel of a tile, from its logical coordinate.
+        /// This is possible when we know the tiles size and the grid offset.
+        /// </summary>
+        /// <param name="logicalCoordinate"></param>
+        /// <returns></returns>
+        public Coordinate GetTopLeftPixelFromLogicalCoordinate(Coordinate logicalCoordinate)
+        {
+            var x = (logicalCoordinate.X * _tilesSize) + _xOffset;
+            var y = (logicalCoordinate.Y * _tilesSize) + _yOffset;
+
+            return new Coordinate(x, y);
+        }
+        
+        /// <summary>
         /// Returns a physical tile center (pixel) from a logical coordinate.
         /// This is possible when we know the tiles size and the grid offset.
         /// </summary>

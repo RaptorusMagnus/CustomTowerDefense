@@ -112,7 +112,7 @@ namespace CustomTowerDefense.Screens.Shared
                 null,
                 _smallScoutShip.CurrentColorEffect,
                 _smallScoutShip.RotationAngle,
-                _smallScoutShip.RotationVector,
+                _smallScoutShip.RotationOrigin,
                 SpriteEffects.None,
                 0);
             

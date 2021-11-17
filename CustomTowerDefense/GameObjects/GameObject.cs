@@ -44,14 +44,14 @@ namespace CustomTowerDefense.GameObjects
         /// </summary>
         public Color CurrentColorEffect { get; set; }
 
-        public Vector2 RotationVector => new Vector2(Width / 2, Height / 2);
+        public Vector2 RotationOrigin => new Vector2(Width / 2, Height / 2);
 
         public Rectangle BoundaryRect
         {
             get
             {
-                var topLeftX = (int)CurrentCoordinate.X - (int)RotationVector.X;
-                var topLeftY = (int)CurrentCoordinate.Y - (int)RotationVector.Y;
+                var topLeftX = (int)CurrentCoordinate.X - (int)RotationOrigin.X;
+                var topLeftY = (int)CurrentCoordinate.Y - (int)RotationOrigin.Y;
 
                 return new Rectangle(
                     topLeftX, topLeftY,
