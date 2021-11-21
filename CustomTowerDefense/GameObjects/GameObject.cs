@@ -23,7 +23,7 @@ namespace CustomTowerDefense.GameObjects
 
         public PreciseObjectType PreciseObjectType { get; }
 
-        public float RotationAngle { get; protected set; }
+        public float RotationAngle { get; set; }
         
         public virtual Coordinate CurrentCoordinate
         {

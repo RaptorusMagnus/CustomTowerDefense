@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CustomTowerDefense.GameObjects;
 using CustomTowerDefense.Shared;
 using JetBrains.Annotations;
@@ -23,13 +24,13 @@ namespace CustomTowerDefense
         /// (do not confuse with max X since we use a zero based matrix) 
         /// </summary>
         public const ushort X_SIZE = 12;
-        
+
         /// <summary>
         /// The Y size is the number of rows
         /// (do not confuse with max Y since we use a zero based matrix) 
         /// </summary>
         public const ushort Y_SIZE = 7;
-        
+
         // with 64*64 tiles, a [18; 10] grid fits in our 1200 * 720 screen.
         // later we'll have a scrollable large map, but for first version, let's stick to a fixed, hard-coded grid.
         private GameObject[,] _grid;
@@ -37,15 +38,17 @@ namespace CustomTowerDefense
         private ushort _tilesSize;
         private ushort _xOffset;
         private ushort _yOffset;
-        
+
         #region Properties
 
         public ushort MaxX => X_SIZE - 1;
         public ushort MaxY => Y_SIZE - 1;
 
+        public List<GameObject> GameObjects => _grid.OfType<GameObject>().ToList();
+
         #endregion
 
-        
+
         #region Constructors
 
         /// <summary>
@@ -60,7 +63,7 @@ namespace CustomTowerDefense
             _tilesSize = tilesSize;
             _xOffset = xOffset;
             _yOffset = yOffset;
-            
+
             _grid = new GameObject[X_SIZE, Y_SIZE];
         }
 
@@ -79,7 +82,7 @@ namespace CustomTowerDefense
 
             return new Coordinate(x, y);
         }
-        
+
         /// <summary>
         /// Returns a physical tile center (pixel) from a logical coordinate.
         /// This is possible when we know the tiles size and the grid offset.
@@ -93,7 +96,24 @@ namespace CustomTowerDefense
 
             return new Coordinate(x, y);
         }
-        
+
+        /// <summary>
+        /// Useful method to determine which logical cell is linked to a physical pixel (or mouse click) on screen.
+        /// </summary>
+        /// <param name="physicalCoordinate"></param>
+        /// <returns>Null when the coordinate is not in the logical grid</returns>
+        [CanBeNull]
+        public Coordinate? GetLogicalCoordinateFromPixelCoordinate(Coordinate physicalCoordinate)
+        {
+            var x = (float) Math.Floor((physicalCoordinate.X - _xOffset) / _tilesSize);
+            var y = (float) Math.Floor((physicalCoordinate.Y - _yOffset) / _tilesSize);
+
+            var loGicalCoordinate = new Coordinate(x, y);
+
+            return IsOutOfGrid(loGicalCoordinate) ? null : loGicalCoordinate;
+        }
+
+
         /// <summary>
         /// Returns the grid content at the specified location.
         /// </summary>
@@ -106,14 +126,24 @@ namespace CustomTowerDefense
             if (IsOutOfGrid(coordinate))
                 throw new ArgumentException($"The received coordinate [{coordinate.X}, {coordinate.Y}] is out of the logical grid.");
 
-            return _grid[(int)coordinate.X, (int)coordinate.Y];
+            return _grid[(int) coordinate.X, (int) coordinate.Y];
         }
 
         public void AddGameObject(GameObject theObjectToAdd, Coordinate coordinate)
         {
-            AddGameObject(theObjectToAdd, (ushort)coordinate.X, (ushort)coordinate.Y);
+            AddGameObject(theObjectToAdd, (ushort) coordinate.X, (ushort) coordinate.Y);
+        }
+
+        public void RemoveObjectAt(Coordinate coordinate)
+        {
+            RemoveObjectAt((ushort)coordinate.X, (ushort)coordinate.Y);
         }
         
+        public void RemoveObjectAt(ushort X, ushort Y)
+        {
+            _grid[X, Y] = null;
+        }
+
         public void AddGameObject(GameObject theObjectToAdd, ushort x, ushort y)
         {
             if (x > X_SIZE - 1 || y > Y_SIZE - 1)

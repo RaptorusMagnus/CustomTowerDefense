@@ -25,20 +25,20 @@ namespace CustomTowerDefense.Screens
         
         // Where the enemies will come from
         private Vortex _startVortex;
+        private Coordinate _startVortexLogicalCoordinate;
         
         // Where the enemies will go
         private Vortex _endVortex;
+        private Coordinate _endVortexLogicalCoordinate;
 
         // The path between the two vortexes
         private List<PathElement> _path;
         
         // The structure on which we can put defense towers
         private List<StructureElement> _structureElements;
-        
-        // for the vortex
-        private float _endVortexRotationAngle;
-        private float _startVortexRotationAngle;
 
+        private Color _pathColor = Color.White;
+        
         #endregion
         
         
@@ -54,58 +54,18 @@ namespace CustomTowerDefense.Screens
                 
             _gameGrid = new LogicalGameGridSingle(TowerDefenseGame.TILES_SIZE, 0, 0);
             
-            var startVortexLogicalCoordinate = new Coordinate(0, 0);
-            _startVortex = new Vortex(_gameGrid.GetPixelCenterFromLogicalCoordinate(startVortexLogicalCoordinate));
-            _gameGrid.AddGameObject(_startVortex, startVortexLogicalCoordinate);
+            _startVortexLogicalCoordinate = new Coordinate(0, 0);
+            _startVortex = new Vortex(_gameGrid.GetPixelCenterFromLogicalCoordinate(_startVortexLogicalCoordinate));
+            _gameGrid.AddGameObject(_startVortex, _startVortexLogicalCoordinate);
 
-            var endVortexLogicalCoordinate = new Coordinate(11, 6);
-            _endVortex = new Vortex(_gameGrid.GetPixelCenterFromLogicalCoordinate(endVortexLogicalCoordinate))
+            _endVortexLogicalCoordinate = new Coordinate(11, 6);
+            _endVortex = new Vortex(_gameGrid.GetPixelCenterFromLogicalCoordinate(_endVortexLogicalCoordinate))
                          {
                              CurrentColorEffect = Color.Red
                          };
-            _gameGrid.AddGameObject(_endVortex, endVortexLogicalCoordinate);
+            _gameGrid.AddGameObject(_endVortex, _endVortexLogicalCoordinate);
 
-            // structure elements
-            _structureElements = new List<StructureElement>();
-            var structureElementLogicalCoordinate = new Coordinate(2, 0);
-            _structureElements.Add(new StructureElement(_gameGrid.GetTopLeftPixelFromLogicalCoordinate(structureElementLogicalCoordinate)));
-            _gameGrid.AddGameObject(_structureElements[0], structureElementLogicalCoordinate);
-            
-            structureElementLogicalCoordinate = new Coordinate(11, 5);
-            _structureElements.Add(new StructureElement(_gameGrid.GetTopLeftPixelFromLogicalCoordinate(structureElementLogicalCoordinate)));
-            _gameGrid.AddGameObject(_structureElements[1], structureElementLogicalCoordinate);
-            
-            structureElementLogicalCoordinate = new Coordinate(10, 5);
-            _structureElements.Add(new StructureElement(_gameGrid.GetTopLeftPixelFromLogicalCoordinate(structureElementLogicalCoordinate)));
-            _gameGrid.AddGameObject(_structureElements[2], structureElementLogicalCoordinate);
-            
-            structureElementLogicalCoordinate = new Coordinate(9, 3);
-            _structureElements.Add(new StructureElement(_gameGrid.GetTopLeftPixelFromLogicalCoordinate(structureElementLogicalCoordinate)));
-            _gameGrid.AddGameObject(_structureElements[3], structureElementLogicalCoordinate);
-            
-            structureElementLogicalCoordinate = new Coordinate(0, 1);
-            _structureElements.Add(new StructureElement(_gameGrid.GetTopLeftPixelFromLogicalCoordinate(structureElementLogicalCoordinate)));
-            _gameGrid.AddGameObject(_structureElements[4], structureElementLogicalCoordinate);
-            
-            // We must calculate the shortest way after the structural elements.
-            var path = ShortestPathHelper.GetShortestPath(_gameGrid, startVortexLogicalCoordinate, endVortexLogicalCoordinate);
-
-            if (path == null)
-                throw new Exception("The end vortex is unreachable and this should never be the case at initialization.");
-
-            _path = new List<PathElement>();
-            
-            foreach (var currentCoordinate in path.Coordinates)
-            {
-                // The full path includes the two vortexes but we don't want them to build the visual in between path elements. 
-                if (currentCoordinate.Equals(startVortexLogicalCoordinate) ||
-                    currentCoordinate.Equals(endVortexLogicalCoordinate))
-                {
-                    continue;
-                }
-                
-                _path.Add(new PathElement(_gameGrid.GetTopLeftPixelFromLogicalCoordinate(currentCoordinate)));
-            }
+            RecomputeShortestPath();
         }
         
         #endregion
@@ -145,7 +105,36 @@ namespace CustomTowerDefense.Screens
         {
             if (_mouseLeftCliked.Evaluate(input, ControllingPlayer, out var playerIndex))
             {
-                _endVortex.CurrentCoordinate = new Coordinate(input.CurrentMouseState.X, input.CurrentMouseState.Y);
+                var clickedCoordinate = new Coordinate(input.CurrentMouseState.X, input.CurrentMouseState.Y);
+                var logicalCoordinate = _gameGrid.GetLogicalCoordinateFromPixelCoordinate(clickedCoordinate);
+
+                // Is the clicked location in the logical grid ?
+                if (logicalCoordinate != null)
+                {
+                    var gameObject = _gameGrid.GetContentAt(logicalCoordinate.Value);
+                    
+                    if (gameObject == null)
+                    {
+                        // The location is free, we may add a new structure element.
+                        var newStructureElement = new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate.Value));
+                        _gameGrid.AddGameObject(newStructureElement, logicalCoordinate.Value);
+                        
+                        var path = RecomputeShortestPath();
+
+                        // Does the added structure element break the path?
+                        if (path == null)
+                        {
+                            _gameGrid.RemoveObjectAt(logicalCoordinate.Value);
+                        }
+                    }
+                    else if (gameObject is StructureElement)
+                    {
+                        // We had a structure element already, we remove it when the user clicks on it again.
+                        _gameGrid.RemoveObjectAt(logicalCoordinate.Value);
+                    }
+                    
+                    
+                }
             }
         }
 
@@ -168,47 +157,38 @@ namespace CustomTowerDefense.Screens
 
             if (IsActive)
             {
-                _startVortexRotationAngle -= 0.01f;
-                _endVortexRotationAngle += 0.01f;
+                // Vortexes must turn
+                _startVortex.RotationAngle -= 0.01f;
+                _endVortex.RotationAngle += 0.01f;
+
+                // When the path is not white (the case after an error), we set it progressively back to white. 
+                if (_pathColor != Color.White)
+                {
+                    _pathColor = new Color(Math.Clamp(_pathColor.R + 3, 0, 255),
+                                           Math.Clamp(_pathColor.G + 3, 0, 255),
+                                           Math.Clamp(_pathColor.B + 3, 0, 255),
+                                           _pathColor.A);
+                }
             }
-            
-            
         }
 
         public override void Draw(GameTime gameTime)
         {
             // we must not clear the background here because we want a standard background screen applied.
             ScreenManager.SpriteBatch.Begin();
-                
-            ScreenManager.SpriteBatch.Draw(
-                TexturesByObjectName[_startVortex.GetType().Name],
-                _startVortex.GetRectangle(),
-                null,
-                _startVortex.CurrentColorEffect,
-                _startVortexRotationAngle,
-                _startVortex.RotationOrigin,
-                SpriteEffects.None,
-                0);
-            
-            ScreenManager.SpriteBatch.Draw(
-                TexturesByObjectName[_endVortex.GetType().Name],
-                _endVortex.GetRectangle(),
-                null,
-                _endVortex.CurrentColorEffect,
-                _endVortexRotationAngle,
-                _endVortex.RotationOrigin,
-                SpriteEffects.None,
-                0);
-            
-            // We must draw all structure elements
-            foreach (var structureElement in _structureElements)
+
+            foreach (var currentGameObject in _gameGrid.GameObjects)
             {
                 ScreenManager.SpriteBatch.Draw(
-                    TexturesByObjectName[structureElement.GetType().Name],
-                    structureElement.CurrentCoordinate.GetVector2(),
-                    Color.White);
+                    TexturesByObjectName[currentGameObject.GetType().Name],
+                    currentGameObject.GetRectangle(),
+                    null,
+                    currentGameObject.CurrentColorEffect,
+                    currentGameObject.RotationAngle,
+                    currentGameObject.RotationOrigin,
+                    SpriteEffects.None,
+                    0);
             }
-                
             
             // We must draw all path elements between the two vortexes
             foreach (var pathElement in _path)
@@ -216,7 +196,7 @@ namespace CustomTowerDefense.Screens
                 ScreenManager.SpriteBatch.Draw(
                     TexturesByObjectName[pathElement.GetType().Name],
                     pathElement.CurrentCoordinate.GetVector2(),
-                    Color.White);
+                    _pathColor);
             }
             
             ScreenManager.SpriteBatch.End();
@@ -230,6 +210,36 @@ namespace CustomTowerDefense.Screens
             }
         }
 
+        private GridPath RecomputeShortestPath()
+        {
+            // We must calculate the shortest way after the structural elements.
+            var path = ShortestPathHelper.GetShortestPath(_gameGrid, _startVortexLogicalCoordinate, _endVortexLogicalCoordinate);
+
+            if (path == null)
+            {
+                // It is impossible to reach the end vortex, we must display an error.
+                _pathColor = Color.Red;
+                return null;
+            }
+                
+
+            _path = new List<PathElement>();
+            
+            foreach (var currentCoordinate in path.Coordinates)
+            {
+                // The full path includes the two vortexes but we don't want them to build the visual in between path elements. 
+                if (currentCoordinate.Equals(_startVortexLogicalCoordinate) ||
+                    currentCoordinate.Equals(_endVortexLogicalCoordinate))
+                {
+                    continue;
+                }
+                
+                _path.Add(new PathElement(_gameGrid.GetTopLeftPixelFromLogicalCoordinate(currentCoordinate)));
+            }
+
+            return path;
+        }
+        
         #endregion
     }
 }
