@@ -17,14 +17,14 @@ namespace CustomTowerDefense.Screens.Menu
     {
         #region Fields
 
-        List<MenuEntry> menuEntries = new List<MenuEntry>();
-        int selectedEntry = 0;
-        string menuTitle;
+        List<MenuEntry> _menuEntries = new List<MenuEntry>();
+        int _selectedEntry = 0;
+        string _menuTitle;
 
-        InputAction menuUp;
-        InputAction menuDown;
-        InputAction menuSelect;
-        InputAction menuCancel;
+        InputAction _menuUp;
+        InputAction _menuDown;
+        InputAction _menuSelect;
+        InputAction _menuCancel;
 
         #endregion
 
@@ -37,7 +37,7 @@ namespace CustomTowerDefense.Screens.Menu
         /// </summary>
         protected IList<MenuEntry> MenuEntries
         {
-            get { return menuEntries; }
+            get { return _menuEntries; }
         }
 
 
@@ -51,26 +51,30 @@ namespace CustomTowerDefense.Screens.Menu
         /// </summary>
         public MenuScreen(string menuTitle)
         {
-            this.menuTitle = menuTitle;
+            this._menuTitle = menuTitle;
 
             TransitionOnTime = TimeSpan.FromSeconds(0.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
 
-            menuUp = new InputAction(
+            _menuUp = new InputAction(
                 new Buttons[] { Buttons.DPadUp, Buttons.LeftThumbstickUp }, 
                 new Keys[] { Keys.Up },
+                Array.Empty<MouseButton>(),
                 true);
-            menuDown = new InputAction(
+            _menuDown = new InputAction(
                 new Buttons[] { Buttons.DPadDown, Buttons.LeftThumbstickDown },
                 new Keys[] { Keys.Down },
+                Array.Empty<MouseButton>(),
                 true);
-            menuSelect = new InputAction(
+            _menuSelect = new InputAction(
                 new Buttons[] { Buttons.A, Buttons.Start },
                 new Keys[] { Keys.Enter, Keys.Space },
+                Array.Empty<MouseButton>(),
                 true);
-            menuCancel = new InputAction(
+            _menuCancel = new InputAction(
                 new Buttons[] { Buttons.B, Buttons.Back },
                 new Keys[] { Keys.Escape },
+                Array.Empty<MouseButton>(),
                 true);
         }
 
@@ -94,28 +98,28 @@ namespace CustomTowerDefense.Screens.Menu
             PlayerIndex playerIndex;
 
             // Move to the previous menu entry?
-            if (menuUp.Evaluate(input, ControllingPlayer, out playerIndex))
+            if (_menuUp.Evaluate(input, ControllingPlayer, out playerIndex))
             {
-                selectedEntry--;
+                _selectedEntry--;
 
-                if (selectedEntry < 0)
-                    selectedEntry = menuEntries.Count - 1;
+                if (_selectedEntry < 0)
+                    _selectedEntry = _menuEntries.Count - 1;
             }
 
             // Move to the next menu entry?
-            if (menuDown.Evaluate(input, ControllingPlayer, out playerIndex))
+            if (_menuDown.Evaluate(input, ControllingPlayer, out playerIndex))
             {
-                selectedEntry++;
+                _selectedEntry++;
 
-                if (selectedEntry >= menuEntries.Count)
-                    selectedEntry = 0;
+                if (_selectedEntry >= _menuEntries.Count)
+                    _selectedEntry = 0;
             }
 
-            if (menuSelect.Evaluate(input, ControllingPlayer, out playerIndex))
+            if (_menuSelect.Evaluate(input, ControllingPlayer, out playerIndex))
             {
-                OnSelectEntry(selectedEntry, playerIndex);
+                OnSelectEntry(_selectedEntry, playerIndex);
             }
-            else if (menuCancel.Evaluate(input, ControllingPlayer, out playerIndex))
+            else if (_menuCancel.Evaluate(input, ControllingPlayer, out playerIndex))
             {
                 OnCancel(playerIndex);
             }
@@ -127,7 +131,7 @@ namespace CustomTowerDefense.Screens.Menu
         /// </summary>
         protected virtual void OnSelectEntry(int entryIndex, PlayerIndex playerIndex)
         {
-            menuEntries[entryIndex].OnSelectEntry(playerIndex);
+            _menuEntries[entryIndex].OnSelectEntry(playerIndex);
         }
 
 
@@ -169,9 +173,9 @@ namespace CustomTowerDefense.Screens.Menu
             Vector2 position = new Vector2(0f, 175f);
 
             // update each menu entry's location in turn
-            for (int i = 0; i < menuEntries.Count; i++)
+            for (int i = 0; i < _menuEntries.Count; i++)
             {
-                MenuEntry menuEntry = menuEntries[i];
+                MenuEntry menuEntry = _menuEntries[i];
                 
                 // each entry is to be centered horizontally
                 position.X = ScreenManager.GraphicsDevice.Viewport.Width / 2 - menuEntry.GetWidth(this) / 2;
@@ -199,11 +203,11 @@ namespace CustomTowerDefense.Screens.Menu
             base.Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
 
             // Update each nested MenuEntry object.
-            for (int i = 0; i < menuEntries.Count; i++)
+            for (int i = 0; i < _menuEntries.Count; i++)
             {
-                bool isSelected = IsActive && (i == selectedEntry);
+                bool isSelected = IsActive && (i == _selectedEntry);
 
-                menuEntries[i].Update(this, isSelected, gameTime);
+                _menuEntries[i].Update(this, isSelected, gameTime);
             }
         }
 
@@ -223,11 +227,11 @@ namespace CustomTowerDefense.Screens.Menu
             spriteBatch.Begin();
 
             // Draw each menu entry in turn.
-            for (int i = 0; i < menuEntries.Count; i++)
+            for (int i = 0; i < _menuEntries.Count; i++)
             {
-                MenuEntry menuEntry = menuEntries[i];
+                MenuEntry menuEntry = _menuEntries[i];
 
-                bool isSelected = IsActive && (i == selectedEntry);
+                bool isSelected = IsActive && (i == _selectedEntry);
 
                 menuEntry.Draw(this, isSelected, gameTime);
             }
@@ -239,13 +243,13 @@ namespace CustomTowerDefense.Screens.Menu
 
             // Draw the menu title centered on the screen
             Vector2 titlePosition = new Vector2(graphics.Viewport.Width / 2, 80);
-            Vector2 titleOrigin = font.MeasureString(menuTitle) / 2;
+            Vector2 titleOrigin = font.MeasureString(_menuTitle) / 2;
             Color titleColor = new Color(192, 192, 192) * TransitionAlpha;
             float titleScale = 1.25f;
 
             titlePosition.Y -= transitionOffset * 100;
 
-            spriteBatch.DrawString(font, menuTitle, titlePosition, titleColor, 0,
+            spriteBatch.DrawString(font, _menuTitle, titlePosition, titleColor, 0,
                                    titleOrigin, titleScale, SpriteEffects.None, 0);
 
             spriteBatch.End();

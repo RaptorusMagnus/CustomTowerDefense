@@ -7,12 +7,15 @@ using GameStateManagement;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace CustomTowerDefense.Screens
 {
     public class BuildPathScreen: GameScreen
     {
         #region Fields
+
+        private readonly InputAction _mouseLeftCliked;
         
         private ContentManager _contentManager;
         
@@ -43,6 +46,12 @@ namespace CustomTowerDefense.Screens
 
         public BuildPathScreen()
         {
+            _mouseLeftCliked = new InputAction(
+                Array.Empty<Buttons>(), 
+                Array.Empty<Keys>(),
+                new MouseButton[] {MouseButton.LeftButton},
+                true);
+                
             _gameGrid = new LogicalGameGridSingle(TowerDefenseGame.TILES_SIZE, 0, 0);
             
             var startVortexLogicalCoordinate = new Coordinate(0, 0);
@@ -132,6 +141,14 @@ namespace CustomTowerDefense.Screens
 
         #endregion
 
+        public override void HandleInput(GameTime gameTime, InputState input)
+        {
+            if (_mouseLeftCliked.Evaluate(input, ControllingPlayer, out var playerIndex))
+            {
+                _endVortex.CurrentCoordinate = new Coordinate(input.CurrentMouseState.X, input.CurrentMouseState.Y);
+            }
+        }
+
         #region Update and Draw
 
         /// <summary>
@@ -154,6 +171,8 @@ namespace CustomTowerDefense.Screens
                 _startVortexRotationAngle -= 0.01f;
                 _endVortexRotationAngle += 0.01f;
             }
+            
+            
         }
 
         public override void Draw(GameTime gameTime)

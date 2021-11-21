@@ -27,11 +27,12 @@ namespace GameStateManagement
     /// </summary>
     public class InputAction
     {
-        private readonly Buttons[] buttons;
-        private readonly Keys[] keys;
-        private readonly bool newPressOnly;
+        private readonly Buttons[] _buttons;
+        private readonly Keys[] _keys;
+        private readonly MouseButton[] _mouseButtons;
+        private readonly bool _newPressOnly;
 
-        // These delegate types map to the methods on InputState. We use these to simplify the evalute method
+        // These delegate types map to the methods on InputState. We use these to simplify the evaluate method
         // by allowing us to map the appropriate delegates and invoke them, rather than having two separate code paths.
         private delegate bool ButtonPress(Buttons button, PlayerIndex? controllingPlayer, out PlayerIndex player);
         private delegate bool KeyPress(Keys key, PlayerIndex? controllingPlayer, out PlayerIndex player);
@@ -41,16 +42,17 @@ namespace GameStateManagement
         /// </summary>
         /// <param name="buttons">An array of buttons that can trigger the action.</param>
         /// <param name="keys">An array of keys that can trigger the action.</param>
+        /// <param name="mouseButtons">An array of mouse buttons that can trigger the action</param>
         /// <param name="newPressOnly">Whether the action only occurs on the first press of one of the buttons/keys, 
         /// false if it occurs each frame one of the buttons/keys is down.</param>
-        public InputAction(Buttons[] buttons, Keys[] keys, bool newPressOnly)
+        public InputAction(Buttons[] buttons, Keys[] keys, MouseButton[] mouseButtons, bool newPressOnly)
         {
             // Store the buttons and keys. If the arrays are null, we create a 0 length array so we don't
             // have to do null checks in the Evaluate method
-            this.buttons = buttons != null ? buttons.Clone() as Buttons[] : new Buttons[0];
-            this.keys = keys != null ? keys.Clone() as Keys[] : new Keys[0];
-
-            this.newPressOnly = newPressOnly;
+            _buttons = buttons != null ? buttons.Clone() as Buttons[] : Array.Empty<Buttons>();
+            _keys = keys != null ? keys.Clone() as Keys[] : Array.Empty<Keys>();
+            _mouseButtons = mouseButtons != null ? mouseButtons.Clone() as MouseButton[] : Array.Empty<MouseButton>();
+            _newPressOnly = newPressOnly;
         }
 
         /// <summary>
@@ -65,10 +67,12 @@ namespace GameStateManagement
             // Figure out which delegate methods to map from the state which takes care of our "newPressOnly" logic
             ButtonPress buttonTest;
             KeyPress keyTest;
-            if (newPressOnly)
+
+            if (_newPressOnly)
             {
                 buttonTest = state.IsNewButtonPress;
                 keyTest = state.IsNewKeyPress;
+                
             }
             else
             {
@@ -77,17 +81,26 @@ namespace GameStateManagement
             }
 
             // Now we simply need to invoke the appropriate methods for each button and key in our collections
-            foreach (Buttons button in buttons)
+            foreach (Buttons button in _buttons)
             {
                 if (buttonTest(button, controllingPlayer, out player))
                     return true;
             }
-            foreach (Keys key in keys)
+            foreach (Keys key in _keys)
             {
                 if (keyTest(key, controllingPlayer, out player))
                     return true;
             }
 
+            foreach (var mouseButton in _mouseButtons)
+            {
+                if (state.IsNewMouseButtonPressed(mouseButton))
+                {
+                    player = PlayerIndex.One;
+                    return true;
+                }
+            }
+            
             // If we got here, the action is not matched
             player = PlayerIndex.One;
             return false;

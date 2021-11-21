@@ -7,6 +7,7 @@
 //-----------------------------------------------------------------------------
 #endregion
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -33,6 +34,9 @@ namespace GameStateManagement
         public readonly bool[] GamePadWasConnected;
 
         public TouchCollection TouchState;
+
+        public MouseState CurrentMouseState;
+        public MouseState LastMouseState;
 
         public readonly List<GestureSample> Gestures = new List<GestureSample>();
         
@@ -72,6 +76,9 @@ namespace GameStateManagement
                 }
             }
 
+            LastMouseState = CurrentMouseState;
+            CurrentMouseState = Mouse.GetState();
+            
             // Get the raw touch state from the TouchPanel
             TouchState = TouchPanel.GetState();
 
@@ -195,6 +202,41 @@ namespace GameStateManagement
                         IsNewButtonPress(button, PlayerIndex.Three, out playerIndex) ||
                         IsNewButtonPress(button, PlayerIndex.Four, out playerIndex));
             }
+        }
+
+        public bool IsNewMouseButtonPressed()
+        {
+            return (CurrentMouseState.LeftButton == ButtonState.Pressed && LastMouseState.LeftButton == ButtonState.Released) ||
+                   (CurrentMouseState.MiddleButton == ButtonState.Pressed && LastMouseState.MiddleButton == ButtonState.Released) ||
+                   (CurrentMouseState.RightButton == ButtonState.Pressed && LastMouseState.RightButton == ButtonState.Released) ||
+                   (CurrentMouseState.XButton1 == ButtonState.Pressed && LastMouseState.XButton1 == ButtonState.Released) ||
+                   (CurrentMouseState.XButton2 == ButtonState.Pressed && LastMouseState.XButton2 == ButtonState.Released);
+        }
+        
+        public bool IsNewMouseButtonPressed(MouseButton mouseButtonToTest)
+        {
+            switch (mouseButtonToTest)
+            {
+                case MouseButton.LeftButton:
+                    return CurrentMouseState.LeftButton == ButtonState.Pressed &&
+                           LastMouseState.LeftButton == ButtonState.Released;
+                case MouseButton.MiddleButton:
+                    return CurrentMouseState.MiddleButton == ButtonState.Pressed &&
+                           LastMouseState.MiddleButton == ButtonState.Released;
+                case MouseButton.RightButton:
+                    return CurrentMouseState.RightButton == ButtonState.Pressed &&
+                           LastMouseState.RightButton == ButtonState.Released;
+                case MouseButton.XButton1:
+                    return CurrentMouseState.XButton1 == ButtonState.Pressed &&
+                           LastMouseState.XButton1 == ButtonState.Released;
+                case MouseButton.XButton2:
+                    return CurrentMouseState.XButton1 == ButtonState.Pressed &&
+                           LastMouseState.XButton2 == ButtonState.Released;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(mouseButtonToTest), mouseButtonToTest, null);
+            }
+            
+
         }
     }
 }

@@ -65,10 +65,12 @@ namespace CustomTowerDefense.Screens.Shared
             _menuSelect = new InputAction(
                 new Buttons[] { Buttons.A, Buttons.Start },
                 new Keys[] { Keys.Space, Keys.Enter },
+                Array.Empty<MouseButton>(),
                 true);
             _menuCancel = new InputAction(
                 new Buttons[] { Buttons.B, Buttons.Back },
                 new Keys[] { Keys.Escape, Keys.Back },
+                Array.Empty<MouseButton>(),
                 true);
         }
 
