@@ -55,8 +55,8 @@ namespace CustomTowerDefense.GameObjects
 
         #region ----- Constructors -----
 
-        public MoveableGameObject(Coordinate coordinate, int width, int height, string imagePath, PreciseObjectType preciseObjectType, float speed)
-            : base(coordinate, width, height, imagePath, preciseObjectType)
+        public MoveableGameObject(Coordinate coordinate, int width, int height, PreciseObjectType preciseObjectType, float speed)
+            : base(coordinate, width, height, preciseObjectType)
         {
             LastMoveTime = DateTime.Now;
             CurrentDirection = Vector2.Zero;

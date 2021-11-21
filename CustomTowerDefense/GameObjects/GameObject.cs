@@ -7,8 +7,10 @@ namespace CustomTowerDefense.GameObjects
     /// <summary>
     /// Base type for all drawable objects in the game.
     /// A GameObject is the conceptual representation of a game element with all its properties.
-    /// Note that an object mustn't draw itself, and must not contain the physical texture linked to it.
+    /// Note that an object mustn't draw itself (we don't want any reference to an external sprite batch).
     /// The Game scene is in charge of actually drawing objects. 
+    /// Note as well that we did not store the physical texture within the object,
+    /// because the load content phase comes after the initialization phase. We don't want half initialized objects in our game.
     /// </summary>
     public class GameObject
     {
@@ -18,7 +20,7 @@ namespace CustomTowerDefense.GameObjects
         private int RotationPointDistanceY => Height / 2;
         
         #region ----- Public Properties -----
-        
+
         public PreciseObjectType PreciseObjectType { get; }
 
         public float RotationAngle { get; protected set; }
@@ -32,12 +34,6 @@ namespace CustomTowerDefense.GameObjects
         public int Width { get; set; }
 
         public int Height { get; set; }
-
-        /// <summary>
-        /// Image path and name (e.g. "Images/Tank1")
-        /// Will be used by the loadContent method to fetch the correct Texture2D
-        /// </summary>
-        public string TextureImagePath { get; }
 
         /// <summary>
         /// Current color effect, applied on the object. Color.White == no effect
@@ -65,12 +61,15 @@ namespace CustomTowerDefense.GameObjects
 
         #region ----- Constructors -----
 
-        public GameObject(Coordinate coordinate, int width, int height, string imagePath, PreciseObjectType preciseObjectType)
+        public GameObject(
+            Coordinate coordinate,
+            int width,
+            int height,
+            PreciseObjectType preciseObjectType)
         {
             _currentCoordinate = coordinate;
             Width = width;
             Height = height;
-            TextureImagePath = imagePath;
             CurrentColorEffect = Color.White;
             PreciseObjectType = preciseObjectType;
         }

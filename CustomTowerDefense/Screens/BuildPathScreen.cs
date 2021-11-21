@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using CustomTowerDefense.GameObjects;
 using CustomTowerDefense.Helpers;
 using CustomTowerDefense.Shared;
@@ -16,11 +15,6 @@ namespace CustomTowerDefense.Screens
         #region Fields
         
         private ContentManager _contentManager;
-        
-        // Textures used in this specific screen 
-        private Texture2D _pathElementTile;
-        private Texture2D _vortexTile;
-        private Texture2D _structureElementTile;
         
         float _pauseAlpha;
 
@@ -39,8 +33,8 @@ namespace CustomTowerDefense.Screens
         private List<StructureElement> _structureElements;
         
         // for the vortex
-        private float _endVortexRotationAngle = 0f;
-        private float _startVortexRotationAngle = 0f;
+        private float _endVortexRotationAngle;
+        private float _startVortexRotationAngle;
 
         #endregion
         
@@ -110,22 +104,20 @@ namespace CustomTowerDefense.Screens
         #region Load/unload content
 
         /// <summary>
-        /// Loads graphics content for this screen. The background texture can be quite
-        /// big, so we use our own local ContentManager to load it. This allows us
-        /// to unload before going from the menus into the game itself, whereas if we
-        /// used the shared ContentManager provided by the Game class, the content
-        /// would remain loaded forever.
+        /// Loads graphics content for this screen. Textures can be quite numerous,
+        /// so we use our own local ContentManager to load it. This allows us
+        /// to unload before going to another screen, whereas if we used the shared
+        /// ContentManager provided by the Game class, the content would remain loaded forever.
         /// </summary>
         public override void Activate(bool instancePreserved)
         {
             if (!instancePreserved)
             {
-                if (_contentManager == null)
-                    _contentManager = new ContentManager(ScreenManager.Game.Services, "Content");
+                _contentManager ??= new ContentManager(ScreenManager.Game.Services, "Content");
 
-                _pathElementTile = _contentManager.Load<Texture2D>(@"Sprites\PathElement01");
-                _vortexTile = _contentManager.Load<Texture2D>(@"Sprites\vortex_64_64");
-                _structureElementTile = _contentManager.Load<Texture2D>(@"Sprites\Structure64_1");
+                TexturesByObjectName.Add(nameof(PathElement), _contentManager.Load<Texture2D>(PathElement.ImagePathAndName));
+                TexturesByObjectName.Add(nameof(Vortex), _contentManager.Load<Texture2D>(Vortex.ImagePathAndName));
+                TexturesByObjectName.Add(nameof(StructureElement), _contentManager.Load<Texture2D>(StructureElement.ImagePathAndName));
             }
         }
 
@@ -134,6 +126,7 @@ namespace CustomTowerDefense.Screens
         /// </summary>
         public override void Unload()
         {
+            TexturesByObjectName.Clear();
             _contentManager.Unload();
         }
 
@@ -169,7 +162,7 @@ namespace CustomTowerDefense.Screens
             ScreenManager.SpriteBatch.Begin();
                 
             ScreenManager.SpriteBatch.Draw(
-                _vortexTile,
+                TexturesByObjectName[_startVortex.GetType().Name],
                 _startVortex.GetRectangle(),
                 null,
                 _startVortex.CurrentColorEffect,
@@ -179,7 +172,7 @@ namespace CustomTowerDefense.Screens
                 0);
             
             ScreenManager.SpriteBatch.Draw(
-                _vortexTile,
+                TexturesByObjectName[_endVortex.GetType().Name],
                 _endVortex.GetRectangle(),
                 null,
                 _endVortex.CurrentColorEffect,
@@ -192,7 +185,7 @@ namespace CustomTowerDefense.Screens
             foreach (var structureElement in _structureElements)
             {
                 ScreenManager.SpriteBatch.Draw(
-                    _structureElementTile,
+                    TexturesByObjectName[structureElement.GetType().Name],
                     structureElement.CurrentCoordinate.GetVector2(),
                     Color.White);
             }
@@ -202,7 +195,7 @@ namespace CustomTowerDefense.Screens
             foreach (var pathElement in _path)
             {
                 ScreenManager.SpriteBatch.Draw(
-                    _pathElementTile,
+                    TexturesByObjectName[pathElement.GetType().Name],
                     pathElement.CurrentCoordinate.GetVector2(),
                     Color.White);
             }

@@ -14,6 +14,7 @@
       <Folder Include="Content\bin\Fonts" />
       <Folder Include="Content\bin\Sprites" />
       <Folder Include="Content\Sounds" />
+      <Folder Include="Exceptions" />
     </ItemGroup>
 
     <ItemGroup>

@@ -39,7 +39,7 @@ namespace CustomTowerDefense.Screens.Shared
         {
             if (!instancePreserved)
             {
-                _smallScoutSprite = ScreenManager.Game.Content.Load<Texture2D>(_smallScoutShip.TextureImagePath);
+                _smallScoutSprite = ScreenManager.Game.Content.Load<Texture2D>(SmallScoutShip.ImagePathAndName);
             }
         }
 

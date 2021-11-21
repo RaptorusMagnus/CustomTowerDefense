@@ -9,10 +9,10 @@ namespace CustomTowerDefense.GameObjects
     {
         private const int WIDTH = 64;
         private const int HEIGHT = 64;
-        private const string IMAGE_NAME = "PathElement";
+        public const string ImagePathAndName = @"Sprites\PathElement01";
         
         public PathElement(Coordinate coordinate) :
-            base(coordinate, WIDTH, HEIGHT, IMAGE_NAME, PreciseObjectType.PathElement)
+            base(coordinate, WIDTH, HEIGHT, PreciseObjectType.PathElement)
         {
         }
     }
