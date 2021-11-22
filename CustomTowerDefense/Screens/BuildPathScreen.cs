@@ -122,7 +122,7 @@ namespace CustomTowerDefense.Screens
                         var path = RecomputeShortestPath();
 
                         // Does the added structure element break the path?
-                        if (path == null)
+                        if (path == null || path.Count == 0)
                         {
                             _gameGrid.RemoveObjectAt(logicalCoordinate.Value);
                         }
@@ -131,9 +131,8 @@ namespace CustomTowerDefense.Screens
                     {
                         // We had a structure element already, we remove it when the user clicks on it again.
                         _gameGrid.RemoveObjectAt(logicalCoordinate.Value);
+                        var path = RecomputeShortestPath();
                     }
-                    
-                    
                 }
             }
         }
@@ -210,22 +209,24 @@ namespace CustomTowerDefense.Screens
             }
         }
 
-        private GridPath RecomputeShortestPath()
+        private List<Coordinate> RecomputeShortestPath()
         {
             // We must calculate the shortest way after the structural elements.
-            var path = ShortestPathHelper.GetShortestPath(_gameGrid, _startVortexLogicalCoordinate, _endVortexLogicalCoordinate);
+            //var path = ShortestPathHelper.GetShortestPath(_gameGrid, _startVortexLogicalCoordinate, _endVortexLogicalCoordinate);
 
-            if (path == null)
+            var shortestPathHelper = new ShortestPathHelper();
+            var path = shortestPathHelper.FindPath(_gameGrid, _startVortexLogicalCoordinate, _endVortexLogicalCoordinate);
+            
+            if (path == null || path.Count == 0)
             {
                 // It is impossible to reach the end vortex, we must display an error.
                 _pathColor = Color.Red;
                 return null;
             }
-                
-
+            
             _path = new List<PathElement>();
             
-            foreach (var currentCoordinate in path.Coordinates)
+            foreach (var currentCoordinate in path)
             {
                 // The full path includes the two vortexes but we don't want them to build the visual in between path elements. 
                 if (currentCoordinate.Equals(_startVortexLogicalCoordinate) ||

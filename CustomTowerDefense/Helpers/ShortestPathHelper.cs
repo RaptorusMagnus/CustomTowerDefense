@@ -1,119 +1,130 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using CustomTowerDefense.GameObjects;
 using CustomTowerDefense.Shared;
-using JetBrains.Annotations;
 
 namespace CustomTowerDefense.Helpers
 {
-    /// <summary>
-    /// Specific implementation of the shortest path algorithm, for our game.
-    /// </summary>
-    public static class ShortestPathHelper
+    public class ShortestPathHelper
     {
-        /// <summary>
-        /// Returns the the shortest path to go from start to end (included).
-        /// Returns null when it is impossible to reach the end.
-        /// </summary>
-        /// <returns>Null when it is impossible to reach the end.</returns>
-        [CanBeNull]
-        public static GridPath GetShortestPath(LogicalGameGridSingle gameGrid, Coordinate start, Coordinate end)
-        {
-            var currentPath = new GridPath(0, 0, gameGrid.MaxX, gameGrid.MaxY);
-            currentPath.AddCoordinate(start);
-            var alreadyKnownPaths = new Dictionary<Coordinate, GridPath>();
-            var shortestAdditionalPath = GetShortestAdditionalPath(gameGrid, end, currentPath, alreadyKnownPaths);
+        // Placeholder for the calculated path (not thread safe)
+        private int[,] _pathLengths;
 
-            if (shortestAdditionalPath == null)
-                return  null;
+        public List<Coordinate> FindPath(LogicalGameGridSingle gameGrid, Coordinate startCoordinate, Coordinate endCoordinate)
+        {
+            //Initialize the path length array
+            _pathLengths = new int[LogicalGameGridSingle.X_SIZE, LogicalGameGridSingle.Y_SIZE];
+            for (int y = 0; y < _pathLengths.GetLength(1); y++)
+            {
+                for (int x = 0; x < _pathLengths.GetLength(0); x++)
+                {
+                    _pathLengths[x, y] = int.MaxValue;
+                }
+            }
             
-            currentPath.AddPath(shortestAdditionalPath);
-            
-            return currentPath;
+            //Begin at the start Coordinate
+            _pathLengths[(int)startCoordinate.X, (int)startCoordinate.Y] = 0;
+            FindPath_Spread(gameGrid, startCoordinate);
+
+            //Once done, backtrack from the end Coordinate
+            List<Coordinate> result = FindPath_Trace(gameGrid, endCoordinate);
+
+            //Only return the path if it contains the start Coordinate
+            if (result.Contains(startCoordinate)) {
+                return result;
+            }
+
+            return new List<Coordinate>();
         }
+
         
-        /// <summary>
-        /// Recursive method finding the shortest path to reach the end coordinate.
-        /// </summary>
-        [CanBeNull]
-        private static GridPath GetShortestAdditionalPath(
-            LogicalGameGridSingle gameGrid,
-            Coordinate end,
-            GridPath currentPath,
-            Dictionary<Coordinate, GridPath> alreadyKnownPaths)
+        private void FindPath_Spread(LogicalGameGridSingle gameGrid, Coordinate coordinate)
         {
-            // a path already exists; its end is our starting point to find the shortest way
-            var start = currentPath.GetPathEnd();
+            FindPath_Spread(gameGrid, coordinate, coordinate.TopSibling);
+            FindPath_Spread(gameGrid, coordinate, coordinate.LeftSibling);
+            FindPath_Spread(gameGrid, coordinate, coordinate.RightSibling);
+            FindPath_Spread(gameGrid, coordinate, coordinate.BottomSibling);
+        }
 
-            if (start == null)
-                throw new ArgumentException("The received path must at least contain the starting point.");
-
-            var directlyReachableCoordinates = GetDirectlyReachableCoordinates(gameGrid, start.Value);
-
-            // Exit condition when nothing is reachable from the starting point.
-            if (directlyReachableCoordinates.Count == 0)
-                return null;
+        private void FindPath_Spread(LogicalGameGridSingle gameGrid, Coordinate start, Coordinate target)
+        {
+            var directlyReachableCoordinates = GetDirectlyReachableCoordinates(gameGrid, start);
             
-            // Exit condition the starting point is connected to the end.
-            if (directlyReachableCoordinates.Contains(end))
-            {
-                var additionalPath = new GridPath(0, 0, gameGrid.MaxX, gameGrid.MaxY);
-                additionalPath.AddCoordinate(end);
-                
-                if (!alreadyKnownPaths.ContainsKey(start.Value))
-                {
-                    alreadyKnownPaths.Add(start.Value, additionalPath);
-                    //Console.WriteLine($"Path is now known from {start.Value} --> {string.Join("; ", additionalPath.Coordinates)}");
-                }
-                
-                return additionalPath;
+            //Abort if no movement is allowed
+            if (!directlyReachableCoordinates.Contains(target)) {
+                return;
             }
 
-            // No exit condition, so let's prepare the recursive call.
-            // To avoid looping we never take a reachable sibling that is already in the path.
-            var siblingsToTest = directlyReachableCoordinates.Except(currentPath.Coordinates).ToList();
-            
-            GridPath thePathToKeep = null;
-            
-            foreach (var currentSiblingCoordinate in siblingsToTest)
-            {
-                GridPath currentSiblingPath;
+            //Get current path lengths
+            int coordinateLength = FindPath_GetPathLength(gameGrid, start);
+            int targetLength = FindPath_GetPathLength(gameGrid, target);
 
-                if (alreadyKnownPaths.ContainsKey(currentSiblingCoordinate))
-                {
-                    currentSiblingPath = alreadyKnownPaths[currentSiblingCoordinate];
-                }
-                else
-                {
-                    // for the recursive call we must add current sibling in the existing path.
-                    var currentPathClone = currentPath.GetClone();
-                    currentPathClone.AddCoordinate(currentSiblingCoordinate);
+            //Use length if it improves target
+            if (coordinateLength + 1 < targetLength)
+            {
+                _pathLengths[(int)target.X, (int)target.Y] = coordinateLength + 1;
+                FindPath_Spread(gameGrid, target);
+            }
+        }
+
+        private int FindPath_GetPathLength(LogicalGameGridSingle gameGrid, Coordinate coordinate)
+        {
+            return IsReachableCoordinate(gameGrid, coordinate) ? _pathLengths[(int)coordinate.X, (int)coordinate.Y] : int.MaxValue;
+        }
+
+        private List<Coordinate> FindPath_Trace(LogicalGameGridSingle gameGrid, Coordinate coordinate)
+        {
+            int coordinateLength = FindPath_GetPathLength(gameGrid, coordinate);
             
-                    currentSiblingPath = GetShortestAdditionalPath(gameGrid, end, currentPathClone, alreadyKnownPaths);
-                }
-                
-                if (currentSiblingPath != null &&
-                    (
-                        thePathToKeep == null ||
-                        currentSiblingPath.NecessaryMoves < thePathToKeep.NecessaryMoves - 1 // -1 because because sibling was added 
-                    ))
-                {
-                    thePathToKeep = new GridPath(0, 0, gameGrid.MaxX, gameGrid.MaxY);
-                    thePathToKeep.AddCoordinate(currentSiblingCoordinate);
-                    thePathToKeep.AddPath(currentSiblingPath);
-                }
+            //Find the sibling paths
+            int topLength = IsReachableCoordinate(gameGrid, coordinate.TopSibling)
+                ? FindPath_GetPathLength(gameGrid, coordinate.TopSibling)
+                : int.MaxValue;
+            int leftLength = IsReachableCoordinate(gameGrid, coordinate.LeftSibling)
+                ? FindPath_GetPathLength(gameGrid, coordinate.LeftSibling)
+                : int.MaxValue;
+            int rightLength = IsReachableCoordinate(gameGrid, coordinate.RightSibling)
+                ? FindPath_GetPathLength(gameGrid, coordinate.RightSibling)
+                : int.MaxValue;
+            int bottomLength = IsReachableCoordinate(gameGrid, coordinate.BottomSibling)
+                ? FindPath_GetPathLength(gameGrid, coordinate.BottomSibling)
+                : int.MaxValue;
+
+            //Calculate the lowest path length
+            int lowestLength =
+                Math.Min(coordinateLength,
+                    Math.Min(topLength,
+                        Math.Min(leftLength,
+                            Math.Min(rightLength, bottomLength))));
+
+            if (lowestLength == int.MaxValue)
+                return new List<Coordinate>();
+            
+            //Add each possible path
+            List<Coordinate> possiblePaths = new List<Coordinate>();
+            if (topLength == lowestLength){
+                possiblePaths.Add(coordinate.TopSibling);
+            }
+            if (leftLength == lowestLength){
+                possiblePaths.Add(coordinate.LeftSibling);
+            }
+            if (rightLength == lowestLength) {
+                possiblePaths.Add(coordinate.RightSibling);
+            }
+            if (bottomLength == lowestLength) {
+                possiblePaths.Add(coordinate.BottomSibling);
             }
 
-            // if a valid short path has been found, we keep it to avoid computing it again.
-            if (thePathToKeep != null && !alreadyKnownPaths.ContainsKey(start.Value))
-            {
-                alreadyKnownPaths.Add(start.Value, thePathToKeep);
-                //Console.WriteLine($"Path is now known from {start.Value} --> {string.Join("; ", thePathToKeep.Coordinates)}");
+            //Continue through a random possible path
+            var result = new List<Coordinate>();
+            if (possiblePaths.Count() > 0) {
+                result = FindPath_Trace(gameGrid, possiblePaths.First());
             }
-            
-            return thePathToKeep;
+
+            //Add the Coordinate itself, then return
+            result.Add(coordinate);
+            return result;
         }
         
         public static List<Coordinate> GetDirectlyReachableCoordinates(LogicalGameGridSingle gameGrid, Coordinate fromLocation)
@@ -144,7 +155,7 @@ namespace CustomTowerDefense.Helpers
             
             return returnedList;
         }
-
+        
         public static bool IsReachableCoordinate(LogicalGameGridSingle gameGrid, Coordinate coordinate)
         {
             if (gameGrid.IsOutOfGrid(coordinate))

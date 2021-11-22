@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 
 namespace CustomTowerDefense.Shared
 {
@@ -41,6 +42,11 @@ namespace CustomTowerDefense.Shared
             return this.X.Equals(receivedCoordinate.X) && this.Y.Equals(receivedCoordinate.Y);
         }
 
+        public decimal GetDecimal()
+        {
+            return (decimal)((int) X + (int)Y * 0.1d);
+        }
+        
         public override int GetHashCode()
         {
             int hash = 13;
