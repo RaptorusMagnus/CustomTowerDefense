@@ -65,6 +65,10 @@ namespace CustomTowerDefense.Screens
                          };
             _gameGrid.AddGameObject(_endVortex, _endVortexLogicalCoordinate);
 
+            var defenseTowerLogicalCoordinate = new Coordinate(3, 3);
+            var defenseTower = new DeffenseTurretDoubleGuns(_gameGrid.GetPixelCenterFromLogicalCoordinate(defenseTowerLogicalCoordinate));
+            _gameGrid.AddGameObject(defenseTower, defenseTowerLogicalCoordinate);
+            
             RecomputeShortestPath();
         }
         
@@ -87,6 +91,7 @@ namespace CustomTowerDefense.Screens
                 TexturesByObjectName.Add(nameof(PathElement), _contentManager.Load<Texture2D>(PathElement.ImagePathAndName));
                 TexturesByObjectName.Add(nameof(Vortex), _contentManager.Load<Texture2D>(Vortex.ImagePathAndName));
                 TexturesByObjectName.Add(nameof(StructureElement), _contentManager.Load<Texture2D>(StructureElement.ImagePathAndName));
+                TexturesByObjectName.Add(nameof(DeffenseTurretDoubleGuns), _contentManager.Load<Texture2D>(DeffenseTurretDoubleGuns.ImagePathAndName));
             }
         }
 

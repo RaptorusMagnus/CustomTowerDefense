@@ -52,6 +52,9 @@
       <None Update="Content\Sprites\structure64_1.xnb">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="Content\Sprites\turet03_64.xnb">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <ItemGroup>

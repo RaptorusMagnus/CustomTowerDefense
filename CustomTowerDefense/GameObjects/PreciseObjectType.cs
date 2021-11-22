@@ -9,6 +9,7 @@
         PathElement,
         Vortex,
         SmallScoutShip,
-        StructureElement
+        StructureElement,
+        DoubleGunsDefenseTurret
     }
 }
