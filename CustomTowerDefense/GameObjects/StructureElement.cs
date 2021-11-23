@@ -6,7 +6,7 @@ namespace CustomTowerDefense.GameObjects
     {
         private const int WIDTH = 64;
         private const int HEIGHT = 64;
-        public const string ImagePathAndName = @"Sprites\Structure64_1";
+        public const string ImagePathAndName = @"Sprites\StructureElementGrayscale2";
         
         public StructureElement(Coordinate coordinate) :
             base(coordinate, WIDTH, HEIGHT, PreciseObjectType.StructureElement)

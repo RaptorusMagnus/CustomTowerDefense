@@ -9,12 +9,14 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace CustomTowerDefense.Screens
+namespace CustomTowerDefense.Screens.BuildPath
 {
     public class BuildPathScreen: GameScreen
     {
         #region Fields
 
+        private BuildPathActionButtonType? _currentActiveActionButton = null;
+        
         private readonly InputAction _mouseLeftCliked;
         
         private ContentManager _contentManager;
@@ -65,10 +67,6 @@ namespace CustomTowerDefense.Screens
                          };
             _gameGrid.AddGameObject(_endVortex, _endVortexLogicalCoordinate);
 
-            var defenseTowerLogicalCoordinate = new Coordinate(3, 3);
-            var defenseTower = new DeffenseTurretDoubleGuns(_gameGrid.GetPixelCenterFromLogicalCoordinate(defenseTowerLogicalCoordinate));
-            _gameGrid.AddGameObject(defenseTower, defenseTowerLogicalCoordinate);
-            
             RecomputeShortestPath();
         }
         
@@ -116,28 +114,65 @@ namespace CustomTowerDefense.Screens
                 // Is the clicked location in the logical grid ?
                 if (logicalCoordinate != null)
                 {
-                    var gameObject = _gameGrid.GetContentAt(logicalCoordinate.Value);
-                    
-                    if (gameObject == null)
-                    {
-                        // The location is free, we may add a new structure element.
-                        var newStructureElement = new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate.Value));
-                        _gameGrid.AddGameObject(newStructureElement, logicalCoordinate.Value);
-                        
-                        var path = RecomputeShortestPath();
+                    var currentGameObject = _gameGrid.GetContentAt(logicalCoordinate.Value);
 
-                        // Does the added structure element break the path?
-                        if (path == null || path.Count == 0)
-                        {
-                            _gameGrid.RemoveObjectAt(logicalCoordinate.Value);
-                        }
-                    }
-                    else if (gameObject is StructureElement)
+                    switch (_currentActiveActionButton)
                     {
-                        // We had a structure element already, we remove it when the user clicks on it again.
-                        _gameGrid.RemoveObjectAt(logicalCoordinate.Value);
-                        var path = RecomputeShortestPath();
+                        case BuildPathActionButtonType.StructureElement when currentGameObject == null:
+                        {
+                            // The location is free, we may add a new structure element.
+                            var newStructureElement = new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate.Value));
+
+                            _gameGrid.AddGameObject(newStructureElement, logicalCoordinate.Value);
+                        
+                            var path = RecomputeShortestPath();
+
+                            // Does the added structure element break the path?
+                            if (path == null || path.Count == 0)
+                            {
+                                _gameGrid.RemoveObjectAt(logicalCoordinate.Value);
+                            }
+
+                            break;
+                        }
+                        case BuildPathActionButtonType.StructureElement:
+                        {
+                            if (currentGameObject is StructureElement)
+                            {
+                                // We had a structure element already, we remove it when the user clicks on it again.
+                                _gameGrid.RemoveObjectAt(logicalCoordinate.Value);
+                                RecomputeShortestPath();
+                            }
+
+                            break;
+                        }
+                        case BuildPathActionButtonType.DoubleGunsTurret when currentGameObject != null:
+                            if (currentGameObject is StructureElement)
+                            {
+                                // there is a structure element, we can build a turret on it
+                                // TODO: We must be able to pile objects up. The grid must not contain objects but list of objects.
+                            }
+                            break;
                     }
+                    
+                    return;
+                }
+                
+                // Is the clicked location on an action button ?
+                var clickedButton = GetActionButtonClicked(clickedCoordinate);
+
+                if (clickedButton == null)
+                    return;
+                
+                switch (clickedButton.Value)
+                {
+                    case BuildPathActionButtonType.DoubleGunsTurret:
+                        _currentActiveActionButton = BuildPathActionButtonType.DoubleGunsTurret;
+                        break;
+                    case BuildPathActionButtonType.StructureElement:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(clickedButton), $"Unhandled button type: {clickedButton.Value}");
                 }
             }
         }
@@ -202,6 +237,8 @@ namespace CustomTowerDefense.Screens
                     pathElement.CurrentCoordinate.GetVector2(),
                     _pathColor);
             }
+
+            DrawInterfaceButtons();
             
             ScreenManager.SpriteBatch.End();
             
@@ -213,7 +250,41 @@ namespace CustomTowerDefense.Screens
                 ScreenManager.FadeBackBufferToBlack(alpha);
             }
         }
+        
+        #endregion  Update and draw
+        
+        #region Private Methods
 
+        private BuildPathActionButtonType? GetActionButtonClicked(Coordinate coordinate)
+        {
+            if (coordinate.X >= TowerDefenseGame.ASPECT_RATIO_WIDTH - 64)
+            {
+                if (coordinate.Y <= 64)
+                {
+                    // First button clicked
+                    return BuildPathActionButtonType.DoubleGunsTurret;
+                }
+            }
+
+            return null;
+        }
+
+        private void DrawInterfaceButtons()
+        {
+            var defenseTowerButton =
+                new DeffenseTurretDoubleGuns(new Coordinate(TowerDefenseGame.ASPECT_RATIO_WIDTH - (DeffenseTurretDoubleGuns.WIDTH / 2), 32));
+            
+            ScreenManager.SpriteBatch.Draw(
+                TexturesByObjectName[defenseTowerButton.GetType().Name],
+                defenseTowerButton.GetRectangle(),
+                null,
+                defenseTowerButton.CurrentColorEffect,
+                defenseTowerButton.RotationAngle,
+                defenseTowerButton.RotationOrigin,
+                SpriteEffects.None,
+                0);
+        }
+        
         private List<Coordinate> RecomputeShortestPath()
         {
             // We must calculate the shortest way after the structural elements.
@@ -246,6 +317,6 @@ namespace CustomTowerDefense.Screens
             return path;
         }
         
-        #endregion
+        #endregion Private Methods
     }
 }
