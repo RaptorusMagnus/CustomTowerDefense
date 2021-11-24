@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 
 namespace CustomTowerDefense.Shared
 {
@@ -13,10 +12,10 @@ namespace CustomTowerDefense.Shared
         public float X { get; }
         public float Y { get; }
 
-        public Coordinate LeftSibling => new Coordinate(X - 1, Y);
-        public Coordinate RightSibling => new Coordinate(X + 1, Y);
-        public Coordinate TopSibling => new Coordinate(X, Y - 1);
-        public Coordinate BottomSibling => new Coordinate(X, Y + 1);
+        public Coordinate LeftSibling => new (X - 1, Y);
+        public Coordinate RightSibling => new (X + 1, Y);
+        public Coordinate TopSibling => new (X, Y - 1);
+        public Coordinate BottomSibling => new (X, Y + 1);
         
         public Coordinate(float x, float y)
         {
@@ -26,7 +25,7 @@ namespace CustomTowerDefense.Shared
 
         public Vector2 GetVector2()
         {
-            return new Vector2(X, Y);
+            return new (X, Y);
         }
 
         public override bool Equals(object obj)
@@ -42,11 +41,6 @@ namespace CustomTowerDefense.Shared
             return this.X.Equals(receivedCoordinate.X) && this.Y.Equals(receivedCoordinate.Y);
         }
 
-        public decimal GetDecimal()
-        {
-            return (decimal)((int) X + (int)Y * 0.1d);
-        }
-        
         public override int GetHashCode()
         {
             int hash = 13;

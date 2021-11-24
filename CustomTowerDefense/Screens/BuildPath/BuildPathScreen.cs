@@ -15,30 +15,27 @@ namespace CustomTowerDefense.Screens.BuildPath
     {
         #region Fields
 
-        private BuildPathActionButtonType? _currentActiveActionButton = null;
+        private BuildPathActionButtonType? _currentActiveActionButton;
         
-        private readonly InputAction _mouseLeftCliked;
+        private readonly InputAction _mouseLeftClicked;
         
         private ContentManager _contentManager;
         
         float _pauseAlpha;
 
-        private LogicalGameGridSingle _gameGrid;
+        private readonly LogicalGameGridSingle _gameGrid;
         
         // Where the enemies will come from
-        private Vortex _startVortex;
-        private Coordinate _startVortexLogicalCoordinate;
+        private readonly Vortex _startVortex;
+        private readonly Coordinate _startVortexLogicalCoordinate;
         
         // Where the enemies will go
-        private Vortex _endVortex;
-        private Coordinate _endVortexLogicalCoordinate;
+        private readonly Vortex _endVortex;
+        private readonly Coordinate _endVortexLogicalCoordinate;
 
         // The path between the two vortexes
         private List<PathElement> _path;
         
-        // The structure on which we can put defense towers
-        private List<StructureElement> _structureElements;
-
         private Color _pathColor = Color.White;
         
         #endregion
@@ -48,10 +45,10 @@ namespace CustomTowerDefense.Screens.BuildPath
 
         public BuildPathScreen()
         {
-            _mouseLeftCliked = new InputAction(
+            _mouseLeftClicked = new InputAction(
                 Array.Empty<Buttons>(), 
                 Array.Empty<Keys>(),
-                new MouseButton[] {MouseButton.LeftButton},
+                new [] {MouseButton.LeftButton},
                 true);
                 
             _gameGrid = new LogicalGameGridSingle(TowerDefenseGame.TILES_SIZE, 0, 0);
@@ -106,74 +103,74 @@ namespace CustomTowerDefense.Screens.BuildPath
 
         public override void HandleInput(GameTime gameTime, InputState input)
         {
-            if (_mouseLeftCliked.Evaluate(input, ControllingPlayer, out var playerIndex))
+            if (!_mouseLeftClicked.Evaluate(input, ControllingPlayer, out var playerIndex))
+                return;
+            
+            var clickedCoordinate = new Coordinate(input.CurrentMouseState.X, input.CurrentMouseState.Y);
+            var logicalCoordinate = _gameGrid.GetLogicalCoordinateFromPixelCoordinate(clickedCoordinate);
+
+            // Is the clicked location in the logical grid ?
+            if (logicalCoordinate != null)
             {
-                var clickedCoordinate = new Coordinate(input.CurrentMouseState.X, input.CurrentMouseState.Y);
-                var logicalCoordinate = _gameGrid.GetLogicalCoordinateFromPixelCoordinate(clickedCoordinate);
+                var currentGameObject = _gameGrid.GetContentAt(logicalCoordinate.Value);
 
-                // Is the clicked location in the logical grid ?
-                if (logicalCoordinate != null)
+                switch (_currentActiveActionButton)
                 {
-                    var currentGameObject = _gameGrid.GetContentAt(logicalCoordinate.Value);
-
-                    switch (_currentActiveActionButton)
+                    case BuildPathActionButtonType.StructureElement when currentGameObject == null:
                     {
-                        case BuildPathActionButtonType.StructureElement when currentGameObject == null:
-                        {
-                            // The location is free, we may add a new structure element.
-                            var newStructureElement = new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate.Value));
+                        // The location is free, we may add a new structure element.
+                        var newStructureElement = new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate.Value));
 
-                            _gameGrid.AddGameObject(newStructureElement, logicalCoordinate.Value);
+                        _gameGrid.AddGameObject(newStructureElement, logicalCoordinate.Value);
                         
-                            var path = RecomputeShortestPath();
+                        var path = RecomputeShortestPath();
 
-                            // Does the added structure element break the path?
-                            if (path == null || path.Count == 0)
-                            {
-                                _gameGrid.RemoveObjectAt(logicalCoordinate.Value);
-                            }
-
-                            break;
-                        }
-                        case BuildPathActionButtonType.StructureElement:
+                        // Does the added structure element break the path?
+                        if (path == null || path.Count == 0)
                         {
-                            if (currentGameObject is StructureElement)
-                            {
-                                // We had a structure element already, we remove it when the user clicks on it again.
-                                _gameGrid.RemoveObjectAt(logicalCoordinate.Value);
-                                RecomputeShortestPath();
-                            }
-
-                            break;
+                            _gameGrid.RemoveObjectAt(logicalCoordinate.Value);
                         }
-                        case BuildPathActionButtonType.DoubleGunsTurret when currentGameObject != null:
-                            if (currentGameObject is StructureElement)
-                            {
-                                // there is a structure element, we can build a turret on it
-                                // TODO: We must be able to pile objects up. The grid must not contain objects but list of objects.
-                            }
-                            break;
-                    }
-                    
-                    return;
-                }
-                
-                // Is the clicked location on an action button ?
-                var clickedButton = GetActionButtonClicked(clickedCoordinate);
 
-                if (clickedButton == null)
-                    return;
-                
-                switch (clickedButton.Value)
-                {
-                    case BuildPathActionButtonType.DoubleGunsTurret:
-                        _currentActiveActionButton = BuildPathActionButtonType.DoubleGunsTurret;
                         break;
+                    }
                     case BuildPathActionButtonType.StructureElement:
+                    {
+                        if (currentGameObject is StructureElement)
+                        {
+                            // We had a structure element already, we remove it when the user clicks on it again.
+                            _gameGrid.RemoveObjectAt(logicalCoordinate.Value);
+                            RecomputeShortestPath();
+                        }
+
                         break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(clickedButton), $"Unhandled button type: {clickedButton.Value}");
+                    }
+                    case BuildPathActionButtonType.DoubleGunsTurret when currentGameObject != null:
+                        if (currentGameObject is StructureElement)
+                        {
+                            // there is a structure element, we can build a turret on it
+                            // TODO: We must be able to pile objects up. The grid must not contain objects but list of objects.
+                        }
+                        break;
                 }
+                    
+                return;
+            }
+                
+            // Is the clicked location on an action button ?
+            var clickedButton = GetActionButtonClicked(clickedCoordinate);
+
+            if (clickedButton == null)
+                return;
+                
+            switch (clickedButton.Value)
+            {
+                case BuildPathActionButtonType.DoubleGunsTurret:
+                    _currentActiveActionButton = BuildPathActionButtonType.DoubleGunsTurret;
+                    break;
+                case BuildPathActionButtonType.StructureElement:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(clickedButton), $"Unhandled button type: {clickedButton.Value}");
             }
         }
 
