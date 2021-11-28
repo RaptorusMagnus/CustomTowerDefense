@@ -113,7 +113,12 @@ namespace CustomTowerDefense.GameObjects
 
         public Rectangle GetRectangle()
         {
-            return new Rectangle((int)CurrentCoordinate.X, (int)CurrentCoordinate.Y, Width, Height);
+            return new((int)CurrentCoordinate.X, (int)CurrentCoordinate.Y, Width, Height);
+        }
+        
+        public Rectangle GetScaledRectangle(float scale)
+        {
+            return new((int)CurrentCoordinate.X, (int)CurrentCoordinate.Y, (int) (Width * scale), (int) (Height * scale));
         }
     }
 }

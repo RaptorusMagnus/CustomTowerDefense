@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using CustomTowerDefense.GameGrids;
 using CustomTowerDefense.GameObjects;
 using CustomTowerDefense.Helpers;
@@ -10,7 +12,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using MonoGame.Framework.Utilities;
 
 namespace CustomTowerDefense.Screens.BuildPath
 {
@@ -40,6 +41,8 @@ namespace CustomTowerDefense.Screens.BuildPath
         private List<PathElement> _path;
         
         private Color _pathColor = Color.White;
+
+        private readonly List<BuildPathActionButtonType> _interfaceButtonTypes;
         
         #endregion
         
@@ -69,7 +72,13 @@ namespace CustomTowerDefense.Screens.BuildPath
 
             RecomputeShortestPath();
 
+            // Interface buttons for current screen.
             _currentActiveActionButton = BuildPathActionButtonType.StructureElement;
+            _interfaceButtonTypes = new List<BuildPathActionButtonType>
+                                    {
+                                        BuildPathActionButtonType.DoubleGunsTurret,
+                                        BuildPathActionButtonType.StructureElement
+                                    };
         }
         
         #endregion
@@ -140,7 +149,6 @@ namespace CustomTowerDefense.Screens.BuildPath
                         var newStructureElement = new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate.Value));
 
                         _gameGrid.AddGameObject(newStructureElement, logicalCoordinate.Value);
-                        Console.WriteLine($"Structure element added at {logicalCoordinate}");
                         
                         var path = RecomputeShortestPath();
 
@@ -271,7 +279,7 @@ namespace CustomTowerDefense.Screens.BuildPath
                     _pathColor);
             }
 
-            DrawInterfaceButtons();
+            DrawInterfaceButtons(_interfaceButtonTypes);
             
             ScreenManager.SpriteBatch.End();
             
@@ -307,51 +315,61 @@ namespace CustomTowerDefense.Screens.BuildPath
             return null;
         }
 
-        
-        //
-        //                   .---;-,
-        //                __/_,{)|__;._
-        //             ."` _     :  _  `.  .:::;.    .::'
-        //             '--(_)------(_)--' `      '::'
-        //
-        // TODO: should take a list of generic objects (where T : GameObject) types and draw the buttons in a loop
-        private void DrawInterfaceButtons()
-        {
-            // To apply a dimmed color effect on the non selecte 
-            var dimmedColorEffect = new Color(128, 128, 128);
-            
-            var defenseTowerButton =
-                new DeffenseTurretDoubleGuns(new Coordinate(TowerDefenseGame.ASPECT_RATIO_WIDTH - (DeffenseTurretDoubleGuns.WIDTH / 2), 32));
 
-            if (_currentActiveActionButton != BuildPathActionButtonType.DoubleGunsTurret)
-                defenseTowerButton.CurrentColorEffect = dimmedColorEffect;
+        private static Type GetObjectTypeFromButtonType(BuildPathActionButtonType buttonType)
+        {
+            return buttonType switch
+            {
+                BuildPathActionButtonType.DoubleGunsTurret => typeof(DeffenseTurretDoubleGuns),
+                BuildPathActionButtonType.StructureElement => typeof(StructureElement),
+                _ => throw new ArgumentOutOfRangeException(nameof(buttonType), buttonType, null)
+            };
+        }
+
+        private static BuildPathActionButtonType GetButtonTypeFromObjectType(Type buttonType)
+        {
+            if (buttonType == typeof(DeffenseTurretDoubleGuns)) return BuildPathActionButtonType.DoubleGunsTurret;
+            if (buttonType == typeof(StructureElement)) return BuildPathActionButtonType.StructureElement;
+
+            throw new Exception($"Unhandled button type: {buttonType}");
+        }
+        
+        private void DrawInterfaceButtons(IEnumerable<BuildPathActionButtonType> buttonsList)
+        {
+            DrawInterfaceButtons(buttonsList.Select(GetObjectTypeFromButtonType));
+        }
+
+        private void DrawInterfaceButtons(IEnumerable<Type> buttonsList)
+        {
+            // To apply a dimmed color effect on the non selected buttons 
+            var dimmedColorEffect = new Color(128, 128, 128);
+            var currentOffsetY = _gameGrid.TilesSize / 2;
+            var xPosition = TowerDefenseGame.ASPECT_RATIO_WIDTH - (_gameGrid.TilesSize / 2);
+            const float buttonScale = 0.75f;
             
-            ScreenManager.SpriteBatch.Draw(
-                TexturesByObjectName[defenseTowerButton.GetType().Name],
-                defenseTowerButton.GetRectangle(),
-                null,
-                defenseTowerButton.CurrentColorEffect,
-                defenseTowerButton.RotationAngle,
-                defenseTowerButton.RotationOrigin,
-                SpriteEffects.None,
-                0);
-            
-            
-            var structureElementButton =
-                new StructureElement(new Coordinate(TowerDefenseGame.ASPECT_RATIO_WIDTH - (StructureElement.WIDTH / 2), 96));
-            
-            if (_currentActiveActionButton != BuildPathActionButtonType.StructureElement)
-                structureElementButton.CurrentColorEffect = dimmedColorEffect;
-            
-            ScreenManager.SpriteBatch.Draw(
-                TexturesByObjectName[structureElementButton.GetType().Name],
-                structureElementButton.GetRectangle(),
-                null,
-                structureElementButton.CurrentColorEffect,
-                structureElementButton.RotationAngle,
-                structureElementButton.RotationOrigin,
-                SpriteEffects.None,
-                0);
+            foreach (var currentButtonObjectType in buttonsList)
+            {
+                var currentButtonCoordinate = new Coordinate(xPosition, currentOffsetY);
+                var currentButton = (GameObject)Activator.CreateInstance(currentButtonObjectType, currentButtonCoordinate);
+
+                if (currentButton == null)
+                    throw new Exception($"Impossible to generate a button from current type: {currentButtonObjectType}");
+                
+                if (_currentActiveActionButton != GetButtonTypeFromObjectType(currentButtonObjectType))
+                    currentButton.CurrentColorEffect = dimmedColorEffect;
+                
+                ScreenManager.SpriteBatch.Draw(
+                    TexturesByObjectName[currentButton.GetType().Name],
+                    currentButton.GetScaledRectangle(buttonScale),
+                    null,
+                    currentButton.CurrentColorEffect,
+                    currentButton.RotationAngle,
+                    currentButton.RotationOrigin,
+                    SpriteEffects.None,
+                    0f);
+                
+                currentOffsetY += _gameGrid.TilesSize;
+            }
         }
         
         private List<Coordinate> RecomputeShortestPath()
