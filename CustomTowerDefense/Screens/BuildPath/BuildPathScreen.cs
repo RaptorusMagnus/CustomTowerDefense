@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using CustomTowerDefense.GameGrids;
 using CustomTowerDefense.GameObjects;
+using CustomTowerDefense.GameObjects.SpaceShips;
 using CustomTowerDefense.Helpers;
 using CustomTowerDefense.Shared;
 using GameStateManagement;
@@ -17,15 +16,15 @@ namespace CustomTowerDefense.Screens.BuildPath
 {
     public class BuildPathScreen: GameScreen
     {
-        #region Fields
-
+        #region Private Fields
+        
         private BuildPathActionButtonType? _currentActiveActionButton;
         
         private readonly InputAction _mouseLeftClicked;
         
         private ContentManager _contentManager;
         
-        float _pauseAlpha;
+        private float _pauseAlpha;
 
         private readonly LogicalGameGridMultiple _gameGrid;
         
@@ -79,6 +78,8 @@ namespace CustomTowerDefense.Screens.BuildPath
                                         BuildPathActionButtonType.DoubleGunsTurret,
                                         BuildPathActionButtonType.StructureElement
                                     };
+
+            SpawnNextSpaceShip();
         }
         
         #endregion
@@ -101,6 +102,7 @@ namespace CustomTowerDefense.Screens.BuildPath
                 TexturesByObjectName.Add(nameof(Vortex), _contentManager.Load<Texture2D>(Vortex.ImagePathAndName));
                 TexturesByObjectName.Add(nameof(StructureElement), _contentManager.Load<Texture2D>(StructureElement.ImagePathAndName));
                 TexturesByObjectName.Add(nameof(DeffenseTurretDoubleGuns), _contentManager.Load<Texture2D>(DeffenseTurretDoubleGuns.ImagePathAndName));
+                TexturesByObjectName.Add(nameof(SmallScoutShip), _contentManager.Load<Texture2D>(SmallScoutShip.ImagePathAndName));
             }
         }
 
@@ -247,6 +249,8 @@ namespace CustomTowerDefense.Screens.BuildPath
                 _startVortex.RotationAngle -= 0.01f;
                 _endVortex.RotationAngle += 0.01f;
 
+                PumpSpaceShipOutOfVortex(gameTime);
+                
                 // When the path is not white (the case after an error), we set it progressively back to white. 
                 if (_pathColor != Color.White)
                 {
@@ -267,7 +271,7 @@ namespace CustomTowerDefense.Screens.BuildPath
             {
                 ScreenManager.SpriteBatch.Draw(
                     TexturesByObjectName[currentGameObject.GetType().Name],
-                    currentGameObject.GetRectangle(),
+                    currentGameObject.GetScaledRectangle(currentGameObject.Scale),
                     null,
                     currentGameObject.CurrentColorEffect,
                     currentGameObject.RotationAngle,
@@ -406,6 +410,47 @@ namespace CustomTowerDefense.Screens.BuildPath
             }
 
             return path;
+        }
+
+        /// <summary>
+        /// Spawns a new spaceship at the beginning of the path (the start vortex), when necessary. 
+        /// </summary>
+        private void SpawnNextSpaceShip()
+        {
+            // TODO: take the spaceship from a given list (based on the level), and not that hard-coded value.
+            var newSpaceShip = new SmallScoutShip(_gameGrid.GetPixelCenterFromLogicalCoordinate(_startVortexLogicalCoordinate))
+            {
+                Scale = 0.1f,
+                RotationAngle = _startVortex.RotationAngle
+            };
+
+            // The new space ship must be small, and must turn with the start vortex
+
+            _gameGrid.AddGameObject(newSpaceShip, _startVortexLogicalCoordinate);
+        }
+
+        /// <summary>
+        /// Does the animation of the space ship going out of the vortex.
+        /// Which is, scaling up to normal size and turn at same speed than the vortex.
+        /// </summary>
+        private void PumpSpaceShipOutOfVortex(GameTime gameTime)
+        {
+            var objectInTheVortex = _gameGrid.GetContentAt(_startVortexLogicalCoordinate)
+                                              ?.FirstOrDefault(o => o.PreciseObjectType != PreciseObjectType.Vortex);
+
+            if (objectInTheVortex != null)
+            {
+                objectInTheVortex.RotationAngle = _startVortex.RotationAngle;
+                if (objectInTheVortex.Scale < 1)
+                {
+                    objectInTheVortex.Scale += 0.005f;
+                }
+                else
+                {
+                    _gameGrid.RemoveObjectAt(objectInTheVortex, _startVortexLogicalCoordinate);
+                    SpawnNextSpaceShip();
+                }
+            }
         }
         
         #endregion Private Methods

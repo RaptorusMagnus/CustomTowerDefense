@@ -14,10 +14,15 @@ namespace CustomTowerDefense.GameObjects
     /// </summary>
     public class GameObject
     {
+        #region Private fields
+
         private Coordinate _currentCoordinate;
         
         private int RotationPointDistanceX => Width / 2;
         private int RotationPointDistanceY => Height / 2;
+
+        #endregion
+        
         
         #region ----- Public Properties -----
 
@@ -31,9 +36,11 @@ namespace CustomTowerDefense.GameObjects
             set => _currentCoordinate = value;
         }
 
-        public int Width { get; set; }
+        public int Width { get; }
 
-        public int Height { get; set; }
+        public int Height { get; }
+        
+        public float Scale { get; set; }
 
         /// <summary>
         /// Current color effect, applied on the object. Color.White == no effect
@@ -72,6 +79,7 @@ namespace CustomTowerDefense.GameObjects
             Height = height;
             CurrentColorEffect = Color.White;
             PreciseObjectType = preciseObjectType;
+            Scale = 1f;
         }
 
         #endregion // Constructors
