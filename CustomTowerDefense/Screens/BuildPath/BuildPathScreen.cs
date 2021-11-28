@@ -181,6 +181,12 @@ namespace CustomTowerDefense.Screens.BuildPath
                     case BuildPathActionButtonType.DoubleGunsTurret when !_gameGrid.IsEmptyAt(logicalCoordinate.Value):
                         if (gameObjects?.Count > 1)
                         {
+                            // It must be possible to remove an existing turret
+                            if (gameObjects[1].GetType() == typeof(DeffenseTurretDoubleGuns))
+                            {
+                                _gameGrid.RemoveObjectAt(gameObjects[1], logicalCoordinate.Value);
+                            }
+                            
                             // We cannot do anything when there are several objects already in the cell.
                             // Generally a construction on the top of an existing structure element. 
                             break;
