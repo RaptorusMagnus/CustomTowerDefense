@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using CustomTowerDefense.GameGrids;
 using CustomTowerDefense.GameObjects;
 using CustomTowerDefense.Helpers;
 using CustomTowerDefense.Shared;
@@ -8,6 +10,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Framework.Utilities;
 
 namespace CustomTowerDefense.Screens.BuildPath
 {
@@ -23,7 +26,7 @@ namespace CustomTowerDefense.Screens.BuildPath
         
         float _pauseAlpha;
 
-        private readonly LogicalGameGridSingle _gameGrid;
+        private readonly LogicalGameGridMultiple _gameGrid;
         
         // Where the enemies will come from
         private readonly Vortex _startVortex;
@@ -51,7 +54,7 @@ namespace CustomTowerDefense.Screens.BuildPath
                 new [] {MouseButton.LeftButton},
                 true);
                 
-            _gameGrid = new LogicalGameGridSingle(TowerDefenseGame.TILES_SIZE, 0, 0);
+            _gameGrid = new LogicalGameGridMultiple(TowerDefenseGame.TILES_SIZE, 0, 0);
             
             _startVortexLogicalCoordinate = new Coordinate(0, 0);
             _startVortex = new Vortex(_gameGrid.GetPixelCenterFromLogicalCoordinate(_startVortexLogicalCoordinate));
@@ -65,6 +68,8 @@ namespace CustomTowerDefense.Screens.BuildPath
             _gameGrid.AddGameObject(_endVortex, _endVortexLogicalCoordinate);
 
             RecomputeShortestPath();
+
+            _currentActiveActionButton = BuildPathActionButtonType.StructureElement;
         }
         
         #endregion
@@ -101,6 +106,19 @@ namespace CustomTowerDefense.Screens.BuildPath
 
         #endregion
 
+        
+        //                  .----.
+        //    .---------.   | == |
+        //    |.-"""""-.|   |----|
+        //    ||       ||   | == |
+        //    ||       ||   |----|
+        //    |'-.....-'|   |::::|
+        //    `"")---(""`   |___.|-
+        //                /       /
+        //    /:::::::::::\     /
+        //   /:::=======:::\   \`\
+        //   `"""""""""""""`    '-'
+        // TODO: split into separate methods for each processing, and if possible in separate class.
         public override void HandleInput(GameTime gameTime, InputState input)
         {
             if (!_mouseLeftClicked.Evaluate(input, ControllingPlayer, out var playerIndex))
@@ -112,43 +130,60 @@ namespace CustomTowerDefense.Screens.BuildPath
             // Is the clicked location in the logical grid ?
             if (logicalCoordinate != null)
             {
-                var currentGameObject = _gameGrid.GetContentAt(logicalCoordinate.Value);
+                var gameObjects = _gameGrid.GetContentAt(logicalCoordinate.Value);
 
                 switch (_currentActiveActionButton)
                 {
-                    case BuildPathActionButtonType.StructureElement when currentGameObject == null:
+                    case BuildPathActionButtonType.StructureElement when _gameGrid.IsEmptyAt(logicalCoordinate.Value):
                     {
                         // The location is free, we may add a new structure element.
                         var newStructureElement = new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate.Value));
 
                         _gameGrid.AddGameObject(newStructureElement, logicalCoordinate.Value);
+                        Console.WriteLine($"Structure element added at {logicalCoordinate}");
                         
                         var path = RecomputeShortestPath();
 
                         // Does the added structure element break the path?
                         if (path == null || path.Count == 0)
                         {
-                            _gameGrid.RemoveObjectAt(logicalCoordinate.Value);
+                            _gameGrid.RemoveObjectAt(newStructureElement, logicalCoordinate.Value);
                         }
 
                         break;
                     }
                     case BuildPathActionButtonType.StructureElement:
                     {
-                        if (currentGameObject is StructureElement)
+                        if (gameObjects?.Count > 1)
+                        {
+                            // We cannot do anything when there are several objects already in the cell.
+                            // Generally a construction on the top of an existing structure element. 
+                            break;
+                        }
+
+                        if (gameObjects?.First() is StructureElement)
                         {
                             // We had a structure element already, we remove it when the user clicks on it again.
-                            _gameGrid.RemoveObjectAt(logicalCoordinate.Value);
+                            _gameGrid.RemoveObjectAt(gameObjects?.First(), logicalCoordinate.Value);
                             RecomputeShortestPath();
                         }
 
                         break;
                     }
-                    case BuildPathActionButtonType.DoubleGunsTurret when currentGameObject != null:
-                        if (currentGameObject is StructureElement)
+                    case BuildPathActionButtonType.DoubleGunsTurret when !_gameGrid.IsEmptyAt(logicalCoordinate.Value):
+                        if (gameObjects?.Count > 1)
+                        {
+                            // We cannot do anything when there are several objects already in the cell.
+                            // Generally a construction on the top of an existing structure element. 
+                            break;
+                        }
+                        
+                        if (gameObjects?.First() is StructureElement)
                         {
                             // there is a structure element, we can build a turret on it
-                            // TODO: We must be able to pile objects up. The grid must not contain objects but list of objects.
+                            var newTurret = new DeffenseTurretDoubleGuns(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate.Value));
+
+                            _gameGrid.AddGameObject(newTurret, logicalCoordinate.Value);
                         }
                         break;
                 }
@@ -168,6 +203,7 @@ namespace CustomTowerDefense.Screens.BuildPath
                     _currentActiveActionButton = BuildPathActionButtonType.DoubleGunsTurret;
                     break;
                 case BuildPathActionButtonType.StructureElement:
+                    _currentActiveActionButton = BuildPathActionButtonType.StructureElement;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(clickedButton), $"Unhandled button type: {clickedButton.Value}");
@@ -254,22 +290,41 @@ namespace CustomTowerDefense.Screens.BuildPath
 
         private BuildPathActionButtonType? GetActionButtonClicked(Coordinate coordinate)
         {
-            if (coordinate.X >= TowerDefenseGame.ASPECT_RATIO_WIDTH - 64)
+            if (coordinate.X >= TowerDefenseGame.ASPECT_RATIO_WIDTH - _gameGrid.TilesSize)
             {
                 if (coordinate.Y <= 64)
                 {
                     // First button clicked
                     return BuildPathActionButtonType.DoubleGunsTurret;
                 }
+                if (coordinate.Y <= 128)
+                {
+                    // Second button clicked
+                    return BuildPathActionButtonType.StructureElement;
+                }
             }
 
             return null;
         }
 
+        
+        //
+        //                   .---;-,
+        //                __/_,{)|__;._
+        //             ."` _     :  _  `.  .:::;.    .::'
+        //             '--(_)------(_)--' `      '::'
+        //
+        // TODO: should take a list of generic objects (where T : GameObject) types and draw the buttons in a loop
         private void DrawInterfaceButtons()
         {
+            // To apply a dimmed color effect on the non selecte 
+            var dimmedColorEffect = new Color(128, 128, 128);
+            
             var defenseTowerButton =
                 new DeffenseTurretDoubleGuns(new Coordinate(TowerDefenseGame.ASPECT_RATIO_WIDTH - (DeffenseTurretDoubleGuns.WIDTH / 2), 32));
+
+            if (_currentActiveActionButton != BuildPathActionButtonType.DoubleGunsTurret)
+                defenseTowerButton.CurrentColorEffect = dimmedColorEffect;
             
             ScreenManager.SpriteBatch.Draw(
                 TexturesByObjectName[defenseTowerButton.GetType().Name],
@@ -280,15 +335,30 @@ namespace CustomTowerDefense.Screens.BuildPath
                 defenseTowerButton.RotationOrigin,
                 SpriteEffects.None,
                 0);
+            
+            
+            var structureElementButton =
+                new StructureElement(new Coordinate(TowerDefenseGame.ASPECT_RATIO_WIDTH - (StructureElement.WIDTH / 2), 96));
+            
+            if (_currentActiveActionButton != BuildPathActionButtonType.StructureElement)
+                structureElementButton.CurrentColorEffect = dimmedColorEffect;
+            
+            ScreenManager.SpriteBatch.Draw(
+                TexturesByObjectName[structureElementButton.GetType().Name],
+                structureElementButton.GetRectangle(),
+                null,
+                structureElementButton.CurrentColorEffect,
+                structureElementButton.RotationAngle,
+                structureElementButton.RotationOrigin,
+                SpriteEffects.None,
+                0);
         }
         
         private List<Coordinate> RecomputeShortestPath()
         {
-            // We must calculate the shortest way after the structural elements.
-            //var path = ShortestPathHelper.GetShortestPath(_gameGrid, _startVortexLogicalCoordinate, _endVortexLogicalCoordinate);
-
+            var singleObjectPerLocationGrid = _gameGrid.GetLogicalGameGridSingle(typeof(StructureElement));
             var shortestPathHelper = new ShortestPathHelper();
-            var path = shortestPathHelper.FindPath(_gameGrid, _startVortexLogicalCoordinate, _endVortexLogicalCoordinate);
+            var path = shortestPathHelper.FindPath(singleObjectPerLocationGrid, _startVortexLogicalCoordinate, _endVortexLogicalCoordinate);
             
             if (path == null || path.Count == 0)
             {

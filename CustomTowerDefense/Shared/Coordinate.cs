@@ -7,7 +7,7 @@ namespace CustomTowerDefense.Shared
     /// X and Y must be floats because for very slow moving objects we could have tiny position increments.
     /// This way, the position changes little by little until it reaches the next pixel. 
     /// </summary>
-    public struct Coordinate
+    public readonly struct Coordinate
     {
         public float X { get; }
         public float Y { get; }
@@ -53,6 +53,16 @@ namespace CustomTowerDefense.Shared
         public override string ToString()
         {
             return $"[{X}, {Y}]";
+        }
+
+        public static bool operator ==(Coordinate left, Coordinate right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Coordinate left, Coordinate right)
+        {
+            return !(left == right);
         }
     }
 }
