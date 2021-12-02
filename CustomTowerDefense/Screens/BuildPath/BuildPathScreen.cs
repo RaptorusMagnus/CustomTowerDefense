@@ -17,6 +17,8 @@ namespace CustomTowerDefense.Screens.BuildPath
     public class BuildPathScreen: GameScreen
     {
         #region Private Fields
+
+        private ushort _numberOfBlocsAvailable;
         
         private BuildPathActionButtonType? _currentActiveActionButton;
         
@@ -30,11 +32,11 @@ namespace CustomTowerDefense.Screens.BuildPath
         
         // Where the enemies will come from
         private readonly Vortex _startVortex;
-        private readonly Coordinate _startVortexLogicalCoordinate;
+        private readonly GridCoordinate _startVortexLogicalCoordinate;
         
         // Where the enemies will go
         private readonly Vortex _endVortex;
-        private readonly Coordinate _endVortexLogicalCoordinate;
+        private readonly GridCoordinate _endVortexLogicalCoordinate;
 
         // The path between the two vortexes
         private List<PathElement> _path;
@@ -58,11 +60,11 @@ namespace CustomTowerDefense.Screens.BuildPath
                 
             _gameGrid = new LogicalGameGridMultiple(TowerDefenseGame.TILES_SIZE, 0, 0);
             
-            _startVortexLogicalCoordinate = new Coordinate(0, 0);
+            _startVortexLogicalCoordinate = new GridCoordinate(0, 0);
             _startVortex = new Vortex(_gameGrid.GetPixelCenterFromLogicalCoordinate(_startVortexLogicalCoordinate));
             _gameGrid.AddGameObject(_startVortex, _startVortexLogicalCoordinate);
 
-            _endVortexLogicalCoordinate = new Coordinate(11, 6);
+            _endVortexLogicalCoordinate = new GridCoordinate(11, 6);
             _endVortex = new Vortex(_gameGrid.GetPixelCenterFromLogicalCoordinate(_endVortexLogicalCoordinate))
                          {
                              CurrentColorEffect = Color.Red
@@ -79,6 +81,19 @@ namespace CustomTowerDefense.Screens.BuildPath
                                         BuildPathActionButtonType.StructureElement
                                     };
 
+            //
+            //         ______
+            //            _\ _~-\___
+            //    =  = ==(____AA____D
+            //                \_____\___________________,-~~~~~~~`-.._
+            //                /     o O o o o o O O o o o o o o O o  |\_
+            //                `~-.__        ___..----..                  )
+            //                      `---~~\___________/------------`````
+            //                      =  ===(_________D
+            //  
+            // TODO: This hard-coded value is just a test, it will later be function of the level and game rules
+            _numberOfBlocsAvailable = 18;
+            
             SpawnNextSpaceShip();
         }
         
@@ -141,69 +156,7 @@ namespace CustomTowerDefense.Screens.BuildPath
             // Is the clicked location in the logical grid ?
             if (logicalCoordinate != null)
             {
-                var gameObjects = _gameGrid.GetContentAt(logicalCoordinate.Value);
-
-                switch (_currentActiveActionButton)
-                {
-                    case BuildPathActionButtonType.StructureElement when _gameGrid.IsEmptyAt(logicalCoordinate.Value):
-                    {
-                        // The location is free, we may add a new structure element.
-                        var newStructureElement = new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate.Value));
-
-                        _gameGrid.AddGameObject(newStructureElement, logicalCoordinate.Value);
-                        
-                        var path = RecomputeShortestPath();
-
-                        // Does the added structure element break the path?
-                        if (path == null || path.Count == 0)
-                        {
-                            _gameGrid.RemoveObjectAt(newStructureElement, logicalCoordinate.Value);
-                        }
-
-                        break;
-                    }
-                    case BuildPathActionButtonType.StructureElement:
-                    {
-                        if (gameObjects?.Count > 1)
-                        {
-                            // We cannot do anything when there are several objects already in the cell.
-                            // Generally a construction on the top of an existing structure element. 
-                            break;
-                        }
-
-                        if (gameObjects?.First() is StructureElement)
-                        {
-                            // We had a structure element already, we remove it when the user clicks on it again.
-                            _gameGrid.RemoveObjectAt(gameObjects?.First(), logicalCoordinate.Value);
-                            RecomputeShortestPath();
-                        }
-
-                        break;
-                    }
-                    case BuildPathActionButtonType.DoubleGunsTurret when !_gameGrid.IsEmptyAt(logicalCoordinate.Value):
-                        if (gameObjects?.Count > 1)
-                        {
-                            // It must be possible to remove an existing turret
-                            if (gameObjects[1].GetType() == typeof(DeffenseTurretDoubleGuns))
-                            {
-                                _gameGrid.RemoveObjectAt(gameObjects[1], logicalCoordinate.Value);
-                            }
-                            
-                            // We cannot do anything when there are several objects already in the cell.
-                            // Generally a construction on the top of an existing structure element. 
-                            break;
-                        }
-                        
-                        if (gameObjects?.First() is StructureElement)
-                        {
-                            // there is a structure element, we can build a turret on it
-                            var newTurret = new DeffenseTurretDoubleGuns(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate.Value));
-
-                            _gameGrid.AddGameObject(newTurret, logicalCoordinate.Value);
-                        }
-                        break;
-                }
-                    
+                ProcessClickOnTheLogicalGameGrid(logicalCoordinate.Value);
                 return;
             }
                 
@@ -249,7 +202,7 @@ namespace CustomTowerDefense.Screens.BuildPath
                 _startVortex.RotationAngle -= 0.01f;
                 _endVortex.RotationAngle += 0.01f;
 
-                PumpSpaceShipOutOfVortex(gameTime);
+                PumpSpaceShipOutOfVortex();
                 
                 // When the path is not white (the case after an error), we set it progressively back to white. 
                 if (_pathColor != Color.White)
@@ -382,7 +335,7 @@ namespace CustomTowerDefense.Screens.BuildPath
             }
         }
         
-        private List<Coordinate> RecomputeShortestPath()
+        private List<GridCoordinate> RecomputeShortestPath()
         {
             var singleObjectPerLocationGrid = _gameGrid.GetLogicalGameGridSingle(typeof(StructureElement));
             var shortestPathHelper = new ShortestPathHelper();
@@ -433,7 +386,7 @@ namespace CustomTowerDefense.Screens.BuildPath
         /// Does the animation of the space ship going out of the vortex.
         /// Which is, scaling up to normal size and turn at same speed than the vortex.
         /// </summary>
-        private void PumpSpaceShipOutOfVortex(GameTime gameTime)
+        private void PumpSpaceShipOutOfVortex()
         {
             var objectInTheVortex = _gameGrid.GetContentAt(_startVortexLogicalCoordinate)
                                               ?.FirstOrDefault(o => o.PreciseObjectType != PreciseObjectType.Vortex);
@@ -452,6 +405,73 @@ namespace CustomTowerDefense.Screens.BuildPath
                 }
             }
         }
+
+        private void ProcessClickOnTheLogicalGameGrid(GridCoordinate logicalCoordinate)
+        {
+            var gameObjects = _gameGrid.GetContentAt(logicalCoordinate);
+
+            switch (_currentActiveActionButton)
+            {
+                case BuildPathActionButtonType.StructureElement when _gameGrid.IsEmptyAt(logicalCoordinate):
+                {
+                    // The location is free, we may add a new structure element.
+                    var newStructureElement = new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate));
+
+                    _gameGrid.AddGameObject(newStructureElement, logicalCoordinate);
+                    
+                    var path = RecomputeShortestPath();
+
+                    // Does the added structure element break the path?
+                    if (path == null || path.Count == 0)
+                    {
+                        _gameGrid.RemoveObjectAt(newStructureElement, logicalCoordinate);
+                    }
+
+                    break;
+                }
+                case BuildPathActionButtonType.StructureElement:
+                {
+                    if (gameObjects?.Count > 1)
+                    {
+                        // We cannot do anything when there are several objects already in the cell.
+                        // Generally a construction on the top of an existing structure element. 
+                        break;
+                    }
+
+                    if (gameObjects?.First() is StructureElement)
+                    {
+                        // We had a structure element already, we remove it when the user clicks on it again.
+                        _gameGrid.RemoveObjectAt(gameObjects.First(), logicalCoordinate);
+                        RecomputeShortestPath();
+                    }
+
+                    break;
+                }
+                case BuildPathActionButtonType.DoubleGunsTurret when !_gameGrid.IsEmptyAt(logicalCoordinate):
+                    if (gameObjects?.Count > 1)
+                    {
+                        // It must be possible to remove an existing turret
+                        if (gameObjects[1].GetType() == typeof(DeffenseTurretDoubleGuns))
+                        {
+                            _gameGrid.RemoveObjectAt(gameObjects[1], logicalCoordinate);
+                        }
+                        
+                        // We cannot do anything when there are several objects already in the cell.
+                        // Generally a construction on the top of an existing structure element. 
+                        break;
+                    }
+                    
+                    if (gameObjects?.First() is StructureElement)
+                    {
+                        // there is a structure element, we can build a turret on it
+                        var newTurret = new DeffenseTurretDoubleGuns(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate));
+
+                        _gameGrid.AddGameObject(newTurret, logicalCoordinate);
+                    }
+                    break;
+            }
+        }
+        
         
         #endregion Private Methods
     }

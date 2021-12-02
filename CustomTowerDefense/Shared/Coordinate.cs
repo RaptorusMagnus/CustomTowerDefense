@@ -12,11 +12,6 @@ namespace CustomTowerDefense.Shared
         public float X { get; }
         public float Y { get; }
 
-        public Coordinate LeftSibling => new (X - 1, Y);
-        public Coordinate RightSibling => new (X + 1, Y);
-        public Coordinate TopSibling => new (X, Y - 1);
-        public Coordinate BottomSibling => new (X, Y + 1);
-        
         public Coordinate(float x, float y)
         {
             X = x;

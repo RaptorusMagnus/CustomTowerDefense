@@ -16,13 +16,13 @@ namespace CustomTowerDefense.GameGrids.Interfaces
         /// </summary>
         /// <param name="theObjectToAdd"></param>
         /// <param name="coordinate"></param>
-        void AddGameObject(GameObject theObjectToAdd, Coordinate coordinate);
+        void AddGameObject(GameObject theObjectToAdd, GridCoordinate coordinate);
 
         /// <summary>
         /// Returns true if the grid is empty at the specified location. 
         /// </summary>
         /// <param name="coordinate">The location to check in the grid</param>
         /// <returns></returns>
-        bool IsEmptyAt(Coordinate coordinate);
+        bool IsEmptyAt(GridCoordinate coordinate);
     }
 }

@@ -12,10 +12,10 @@ namespace CustomTowerDefense.Helpers
         // Placeholder for the calculated path (not thread safe)
         private int[,] _pathLengths;
 
-        public List<Coordinate> FindPath(LogicalGameGridSingle gameGrid, Coordinate startCoordinate, Coordinate endCoordinate)
+        public List<GridCoordinate> FindPath(LogicalGameGridSingle gameGrid, GridCoordinate startCoordinate, GridCoordinate endCoordinate)
         {
             //Initialize the path length array
-            _pathLengths = new int[LogicalGameGridSingle.X_SIZE, LogicalGameGridSingle.Y_SIZE];
+            _pathLengths = new int[LogicalGameGrid.X_SIZE, LogicalGameGrid.Y_SIZE];
             for (int y = 0; y < _pathLengths.GetLength(1); y++)
             {
                 for (int x = 0; x < _pathLengths.GetLength(0); x++)
@@ -25,22 +25,22 @@ namespace CustomTowerDefense.Helpers
             }
             
             //Begin at the start Coordinate
-            _pathLengths[(int)startCoordinate.X, (int)startCoordinate.Y] = 0;
+            _pathLengths[startCoordinate.X, startCoordinate.Y] = 0;
             FindPath_Spread(gameGrid, startCoordinate);
 
             //Once done, backtrack from the end Coordinate
-            List<Coordinate> result = FindPath_Trace(gameGrid, endCoordinate);
+            List<GridCoordinate> result = FindPath_Trace(gameGrid, endCoordinate);
 
             //Only return the path if it contains the start Coordinate
             if (result.Contains(startCoordinate)) {
                 return result;
             }
 
-            return new List<Coordinate>();
+            return new List<GridCoordinate>();
         }
 
         
-        private void FindPath_Spread(LogicalGameGridSingle gameGrid, Coordinate coordinate)
+        private void FindPath_Spread(LogicalGameGridSingle gameGrid, GridCoordinate coordinate)
         {
             FindPath_Spread(gameGrid, coordinate, coordinate.TopSibling);
             FindPath_Spread(gameGrid, coordinate, coordinate.LeftSibling);
@@ -48,7 +48,7 @@ namespace CustomTowerDefense.Helpers
             FindPath_Spread(gameGrid, coordinate, coordinate.BottomSibling);
         }
 
-        private void FindPath_Spread(LogicalGameGridSingle gameGrid, Coordinate start, Coordinate target)
+        private void FindPath_Spread(LogicalGameGridSingle gameGrid, GridCoordinate start, GridCoordinate target)
         {
             var directlyReachableCoordinates = GetDirectlyReachableCoordinates(gameGrid, start);
             
@@ -64,17 +64,17 @@ namespace CustomTowerDefense.Helpers
             //Use length if it improves target
             if (coordinateLength + 1 < targetLength)
             {
-                _pathLengths[(int)target.X, (int)target.Y] = coordinateLength + 1;
+                _pathLengths[target.X, target.Y] = coordinateLength + 1;
                 FindPath_Spread(gameGrid, target);
             }
         }
 
-        private int FindPath_GetPathLength(LogicalGameGridSingle gameGrid, Coordinate coordinate)
+        private int FindPath_GetPathLength(LogicalGameGridSingle gameGrid, GridCoordinate coordinate)
         {
-            return IsReachableCoordinate(gameGrid, coordinate) ? _pathLengths[(int)coordinate.X, (int)coordinate.Y] : int.MaxValue;
+            return IsReachableCoordinate(gameGrid, coordinate) ? _pathLengths[coordinate.X, coordinate.Y] : int.MaxValue;
         }
 
-        private List<Coordinate> FindPath_Trace(LogicalGameGridSingle gameGrid, Coordinate coordinate)
+        private List<GridCoordinate> FindPath_Trace(LogicalGameGridSingle gameGrid, GridCoordinate coordinate)
         {
             int coordinateLength = FindPath_GetPathLength(gameGrid, coordinate);
             
@@ -100,10 +100,10 @@ namespace CustomTowerDefense.Helpers
                             Math.Min(rightLength, bottomLength))));
 
             if (lowestLength == int.MaxValue)
-                return new List<Coordinate>();
+                return new List<GridCoordinate>();
             
             //Add each possible path
-            List<Coordinate> possiblePaths = new List<Coordinate>();
+            var possiblePaths = new List<GridCoordinate>();
             if (topLength == lowestLength){
                 possiblePaths.Add(coordinate.TopSibling);
             }
@@ -118,8 +118,8 @@ namespace CustomTowerDefense.Helpers
             }
 
             //Continue through a random possible path
-            var result = new List<Coordinate>();
-            if (possiblePaths.Count() > 0) {
+            var result = new List<GridCoordinate>();
+            if (possiblePaths.Any()) {
                 result = FindPath_Trace(gameGrid, possiblePaths.First());
             }
 
@@ -128,10 +128,10 @@ namespace CustomTowerDefense.Helpers
             return result;
         }
         
-        public static List<Coordinate> GetDirectlyReachableCoordinates(LogicalGameGridSingle gameGrid, Coordinate fromLocation)
+        public static List<GridCoordinate> GetDirectlyReachableCoordinates(LogicalGameGridSingle gameGrid, GridCoordinate fromLocation)
         {
             // we can only move up/down, and left/right, no diagonal moves allowed.
-            var returnedList = new List<Coordinate>();
+            var returnedList = new List<GridCoordinate>();
             
 
             if (IsReachableCoordinate(gameGrid, fromLocation.LeftSibling))
@@ -157,7 +157,7 @@ namespace CustomTowerDefense.Helpers
             return returnedList;
         }
         
-        public static bool IsReachableCoordinate(LogicalGameGridSingle gameGrid, Coordinate coordinate)
+        public static bool IsReachableCoordinate(LogicalGameGridSingle gameGrid, GridCoordinate coordinate)
         {
             if (gameGrid.IsOutOfGrid(coordinate))
                 return false;

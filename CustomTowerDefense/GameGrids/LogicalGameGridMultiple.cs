@@ -60,24 +60,24 @@ namespace CustomTowerDefense.GameGrids
         /// <returns>Null when there is nothing at this location</returns>
         /// <exception cref="ArgumentException">When the coordinate is not located in the grid.</exception>
         [CanBeNull]
-        public List<GameObject> GetContentAt(Coordinate coordinate, bool mustCheckCoordinateValidity = true)
+        public List<GameObject> GetContentAt(GridCoordinate coordinate, bool mustCheckCoordinateValidity = true)
         {
             if (mustCheckCoordinateValidity && IsOutOfGrid(coordinate))
                 throw new ArgumentException($"The received coordinate [{coordinate.X}, {coordinate.Y}] is out of the logical grid.");
 
-            return _grid[(ushort) coordinate.X, (ushort) coordinate.Y];
+            return _grid[coordinate.X, coordinate.Y];
         }
         
-        public void AddGameObject([NotNull] GameObject theObjectToAdd, Coordinate coordinate)
+        public void AddGameObject([NotNull] GameObject theObjectToAdd, GridCoordinate coordinate)
         {
             if (IsOutOfGrid(coordinate))
                 throw new ArgumentException($"The received coordinate [{coordinate.X}, {coordinate.Y}] is out of the logical grid.");
 
-            _grid[(ushort) coordinate.X, (ushort) coordinate.Y] ??= new List<GameObject>();
-            _grid[(ushort) coordinate.X, (ushort) coordinate.Y].Add(theObjectToAdd);
+            _grid[coordinate.X, coordinate.Y] ??= new List<GameObject>();
+            _grid[coordinate.X, coordinate.Y].Add(theObjectToAdd);
         }
         
-        public void RemoveObjectAt([NotNull] GameObject theObjectToRemove, Coordinate coordinate)
+        public void RemoveObjectAt([NotNull] GameObject theObjectToRemove, GridCoordinate coordinate)
         {
             if (IsOutOfGrid(coordinate))
                 throw new ArgumentException($"The received coordinate [{coordinate.X}, {coordinate.Y}] is out of the logical grid.");
@@ -91,7 +91,7 @@ namespace CustomTowerDefense.GameGrids
         }
         
         /// <inheritdoc cref="ILogicalGrid.IsEmptyAt"/>
-        public bool IsEmptyAt(Coordinate coordinate)
+        public bool IsEmptyAt(GridCoordinate coordinate)
         {
             var contentAt = GetContentAt(coordinate);
             
@@ -108,11 +108,11 @@ namespace CustomTowerDefense.GameGrids
         {
             var gridSingle = new LogicalGameGridSingle(TilesSize, XOffset, YOffset);
 
-            for (var x = 0; x <= MaxX; x++)
+            for (ushort x = 0; x <= MaxX; x++)
             {
-                for (var y = 0; y <= MaxY; y++)
+                for (ushort y = 0; y <= MaxY; y++)
                 {
-                    var coordinate = new Coordinate(x, y);
+                    var coordinate = new GridCoordinate(x, y);
                     
                     var objectOfCorrectType =
                         GetContentAt(coordinate, mustCheckCoordinateValidity: false)

@@ -52,7 +52,7 @@ namespace CustomTowerDefense.GameGrids
         /// </summary>
         /// <param name="logicalCoordinate"></param>
         /// <returns></returns>
-        public Coordinate GetTopLeftPixelFromLogicalCoordinate(Coordinate logicalCoordinate)
+        public Coordinate GetTopLeftPixelFromLogicalCoordinate(GridCoordinate logicalCoordinate)
         {
             var x = (logicalCoordinate.X * TilesSize) + XOffset;
             var y = (logicalCoordinate.Y * TilesSize) + YOffset;
@@ -66,7 +66,7 @@ namespace CustomTowerDefense.GameGrids
         /// </summary>
         /// <param name="logicalCoordinate"></param>
         /// <returns></returns>
-        public Coordinate GetPixelCenterFromLogicalCoordinate(Coordinate logicalCoordinate)
+        public Coordinate GetPixelCenterFromLogicalCoordinate(GridCoordinate logicalCoordinate)
         {
             var x = (logicalCoordinate.X * TilesSize) + (TilesSize / 2f) + XOffset;
             var y = (logicalCoordinate.Y * TilesSize) + (TilesSize / 2f) + YOffset;
@@ -81,25 +81,23 @@ namespace CustomTowerDefense.GameGrids
         /// <param name="physicalCoordinate"></param>
         /// <returns>Null when the coordinate is not in the logical grid</returns>
         [CanBeNull]
-        public Coordinate? GetLogicalCoordinateFromPixelCoordinate(Coordinate physicalCoordinate)
+        public GridCoordinate? GetLogicalCoordinateFromPixelCoordinate(Coordinate physicalCoordinate)
         {
-            var x = (float) Math.Floor((physicalCoordinate.X - XOffset) / TilesSize);
-            var y = (float) Math.Floor((physicalCoordinate.Y - YOffset) / TilesSize);
+            var x = (ushort) Math.Floor((physicalCoordinate.X - XOffset) / TilesSize);
+            var y = (ushort) Math.Floor((physicalCoordinate.Y - YOffset) / TilesSize);
 
-            var loGicalCoordinate = new Coordinate(x, y);
+            var logicalCoordinate = new GridCoordinate(x, y);
 
-            return IsOutOfGrid(loGicalCoordinate) ? null : loGicalCoordinate;
+            return IsOutOfGrid(logicalCoordinate) ? null : logicalCoordinate;
         }
         
         /// <summary>
         /// Returns true if the given coordinate is out of the grid.
         /// </summary>
         /// <returns></returns>
-        public bool IsOutOfGrid(Coordinate coordinate)
+        public bool IsOutOfGrid(GridCoordinate coordinate)
         {
-            return coordinate.X < 0 ||
-                   coordinate.Y < 0 ||
-                   coordinate.X > MaxX ||
+            return coordinate.X > MaxX ||
                    coordinate.Y > MaxY;
         }
     }

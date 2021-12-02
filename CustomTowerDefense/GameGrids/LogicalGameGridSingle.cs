@@ -57,47 +57,50 @@ namespace CustomTowerDefense.GameGrids
         /// <returns>Null when there is nothing at this location</returns>
         /// <exception cref="ArgumentException">When the coordinate is not located in the grid.</exception>
         [CanBeNull]
-        public GameObject GetContentAt(Coordinate coordinate)
+        public GameObject GetContentAt(GridCoordinate coordinate)
         {
             if (IsOutOfGrid(coordinate))
                 throw new ArgumentException($"The received coordinate [{coordinate.X}, {coordinate.Y}] is out of the logical grid.");
 
-            return _grid[(ushort) coordinate.X, (ushort) coordinate.Y];
+            return _grid[coordinate.X, coordinate.Y];
         }
 
-        public void RemoveObjectAt(Coordinate coordinate)
-        {
-            if (IsOutOfGrid(coordinate))
-                throw new ArgumentException($"The received coordinate [{coordinate.X}, {coordinate.Y}] is out of the logical grid.");
-            
-            _grid[(ushort)coordinate.X, (ushort)coordinate.Y] = null;
-        }
-        
         public void RemoveObjectAt(ushort x, ushort y)
         {
-            RemoveObjectAt(new Coordinate(x, y));
+            RemoveObjectAt(new GridCoordinate(x, y));
         }
 
-        public void AddGameObject([NotNull] GameObject theObjectToAdd, Coordinate coordinate)
+        public void AddGameObject([NotNull] GameObject theObjectToAdd, GridCoordinate coordinate)
         {
             // For the "Single object per cell" version of the grid, we do not allow piling up.
             if (GetContentAt(coordinate) != null)
                 throw new Exception($"There is already an object at location {coordinate}, impossible to add the {theObjectToAdd.GetType().Name}");
 
-            _grid[(ushort)coordinate.X, (ushort)coordinate.Y] = theObjectToAdd;
+            _grid[coordinate.X, coordinate.Y] = theObjectToAdd;
         }
 
         /// <inheritdoc cref="ILogicalGrid.IsEmptyAt"/>
-        public bool IsEmptyAt(Coordinate coordinate)
+        public bool IsEmptyAt(GridCoordinate coordinate)
         {
             return GetContentAt(coordinate) == null;
         }
 
         public void AddGameObject([NotNull] GameObject theObjectToAdd, ushort x, ushort y)
         {
-            AddGameObject(theObjectToAdd, new Coordinate(x, y));
+            AddGameObject(theObjectToAdd, new GridCoordinate(x, y));
         }
 
+        #region Private methods
+        
+        private void RemoveObjectAt(GridCoordinate coordinate)
+        {
+            if (IsOutOfGrid(coordinate))
+                throw new ArgumentException($"The received coordinate [{coordinate.X}, {coordinate.Y}] is out of the logical grid.");
+            
+            _grid[coordinate.X, coordinate.Y] = null;
+        }
+        
+        #endregion
 
     }
 }
