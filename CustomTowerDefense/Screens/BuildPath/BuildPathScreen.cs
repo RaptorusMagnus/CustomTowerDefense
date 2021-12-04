@@ -41,7 +41,9 @@ namespace CustomTowerDefense.Screens.BuildPath
         // The path between the two vortexes
         private List<PathElement> _path;
         
+        // Colors for elements that may turn red and progressively go back to white.
         private Color _pathColor = Color.White;
+        private Color _numberOfElementsInfoColor = Color.White;
 
         private readonly List<BuildPathActionButtonType> _interfaceButtonTypes;
         
@@ -204,14 +206,10 @@ namespace CustomTowerDefense.Screens.BuildPath
 
                 PumpSpaceShipOutOfVortex();
                 
-                // When the path is not white (the case after an error), we set it progressively back to white. 
-                if (_pathColor != Color.White)
-                {
-                    _pathColor = new Color(Math.Clamp(_pathColor.R + 3, 0, 255),
-                                           Math.Clamp(_pathColor.G + 3, 0, 255),
-                                           Math.Clamp(_pathColor.B + 3, 0, 255),
-                                           _pathColor.A);
-                }
+                // When the path or any other element is not of the correct color (the case after an error),
+                // we set it progressively back to white.
+                _pathColor = FaderHelper.GetNextFadeBackToWhiteColor(_pathColor);
+                _numberOfElementsInfoColor = FaderHelper.GetNextFadeBackToWhiteColor(_numberOfElementsInfoColor);
             }
         }
 
@@ -243,6 +241,8 @@ namespace CustomTowerDefense.Screens.BuildPath
             }
 
             DrawInterfaceButtons(_interfaceButtonTypes);
+
+            DrawInfoBar();
             
             ScreenManager.SpriteBatch.End();
             
@@ -334,6 +334,18 @@ namespace CustomTowerDefense.Screens.BuildPath
                 currentOffsetY += _gameGrid.TilesSize;
             }
         }
+
+        private void DrawInfoBar()
+        {
+            var font = ScreenManager.Font;
+            var viewport = ScreenManager.GraphicsDevice.Viewport;
+            var bottomLeftCorner = new Vector2(0, viewport.Height);
+            var availableStructureElementsText = $"Structure elements: {_numberOfBlocsAvailable}";
+            var textSize = font.MeasureString(availableStructureElementsText);
+            var textPosition = bottomLeftCorner - new Vector2(0, textSize.Y);
+            
+            ScreenManager.SpriteBatch.DrawString(font, availableStructureElementsText, textPosition, _numberOfElementsInfoColor);
+        }
         
         private List<GridCoordinate> RecomputeShortestPath()
         {
@@ -413,22 +425,8 @@ namespace CustomTowerDefense.Screens.BuildPath
             switch (_currentActiveActionButton)
             {
                 case BuildPathActionButtonType.StructureElement when _gameGrid.IsEmptyAt(logicalCoordinate):
-                {
-                    // The location is free, we may add a new structure element.
-                    var newStructureElement = new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate));
-
-                    _gameGrid.AddGameObject(newStructureElement, logicalCoordinate);
-                    
-                    var path = RecomputeShortestPath();
-
-                    // Does the added structure element break the path?
-                    if (path == null || path.Count == 0)
-                    {
-                        _gameGrid.RemoveObjectAt(newStructureElement, logicalCoordinate);
-                    }
-
+                    AddStructureOnEmptyLocation(logicalCoordinate);
                     break;
-                }
                 case BuildPathActionButtonType.StructureElement:
                 {
                     if (gameObjects?.Count > 1)
@@ -442,6 +440,7 @@ namespace CustomTowerDefense.Screens.BuildPath
                     {
                         // We had a structure element already, we remove it when the user clicks on it again.
                         _gameGrid.RemoveObjectAt(gameObjects.First(), logicalCoordinate);
+                        _numberOfBlocsAvailable++;
                         RecomputeShortestPath();
                     }
 
@@ -471,7 +470,37 @@ namespace CustomTowerDefense.Screens.BuildPath
                     break;
             }
         }
-        
+
+        /// <summary>
+        /// Handles the necessary actions when a structure element is added on an empty location.
+        /// As the naming suggest, no test is done, so the target location is supposed empty.
+        /// </summary>
+        /// <param name="logicalCoordinate"></param>
+        private void AddStructureOnEmptyLocation(GridCoordinate logicalCoordinate)
+        {
+            if (_numberOfBlocsAvailable <= 0)
+            {
+                // we turn the related info text to red, so that the user understands why we don't put a new structure elment
+                _numberOfElementsInfoColor = Color.Red;
+                return;
+            }
+            
+            // The location is free, we may add a new structure element.
+            var newStructureElement = new StructureElement(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate));
+
+            _gameGrid.AddGameObject(newStructureElement, logicalCoordinate);
+                    
+            var path = RecomputeShortestPath();
+
+            // Does the added structure element break the path?
+            if (path == null || path.Count == 0)
+            {
+                _gameGrid.RemoveObjectAt(newStructureElement, logicalCoordinate);
+                return;
+            }
+
+            _numberOfBlocsAvailable--;
+        }
         
         #endregion Private Methods
     }
