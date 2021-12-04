@@ -162,6 +162,7 @@ namespace CustomTowerDefense.Screens.BuildPath
         // TODO: split into separate methods for each processing, and if possible in separate class.
         public override void HandleInput(GameTime gameTime, InputState input)
         {
+            // ReSharper disable once UnusedVariable (we don't care about the player because it's a single player game)
             if (!_mouseLeftClicked.Evaluate(input, ControllingPlayer, out var playerIndex))
                 return;
             
@@ -405,7 +406,7 @@ namespace CustomTowerDefense.Screens.BuildPath
                 return;
             
             // First we need to know the final rotation angle to reach the first path element
-            var targetAngle = GetAngleFromTargetSiblingTile(_startVortexLogicalCoordinate, _pathCoordinates[1]);
+            var targetAngle = AnglesHelper.GetAngleFromTargetSiblingTile(_startVortexLogicalCoordinate, _pathCoordinates[1]);
             
             // now we compute the number of necessary steps to reach that angle depending on the pump speed (scale increment)
             const float initialScale = 0.1f;
@@ -443,25 +444,13 @@ namespace CustomTowerDefense.Screens.BuildPath
             
             if (objectInTheVortex.Scale < 1)
             {
-                objectInTheVortex.Scale += 0.005f;
+                objectInTheVortex.Scale += PUMP_OUT_OF_VORTEX_SPEED;
             }
             else
             {
                 _gameGrid.RemoveObjectAt(objectInTheVortex, _startVortexLogicalCoordinate);
                 SpawnNextSpaceShip();
             }
-        }
-
-        private float GetAngleFromTargetSiblingTile(GridCoordinate start, GridCoordinate target)
-        {
-            if (target == start.RightSibling)
-                return MathHelper.PiOver2;
-            if (target == start.BottomSibling)
-                return MathHelper.Pi;
-            if (target == start.LeftSibling)
-                return -MathHelper.PiOver2;
-            //if (target == start.TopSibling)
-                return 0;
         }
 
         private void ProcessClickOnTheLogicalGameGrid(GridCoordinate logicalCoordinate)
@@ -511,6 +500,9 @@ namespace CustomTowerDefense.Screens.BuildPath
                         // there is a structure element, we can build a turret on it
                         var newTurret = new DeffenseTurretDoubleGuns(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate));
 
+                        newTurret.RotationAngle = AnglesHelper.GetAngleToReachTarget(newTurret.CurrentCoordinate.GetVector2(),
+                                                                                     _startVortex.CurrentCoordinate.GetVector2());
+                        
                         _gameGrid.AddGameObject(newTurret, logicalCoordinate);
                     }
                     break;
@@ -526,7 +518,7 @@ namespace CustomTowerDefense.Screens.BuildPath
         {
             if (_numberOfBlocsAvailable <= 0)
             {
-                // we turn the related info text to red, so that the user understands why we don't put a new structure elment
+                // we turn the related info text to red, so that the user understands why we don't put a new structure element
                 _numberOfElementsInfoColor = Color.Red;
                 return;
             }
