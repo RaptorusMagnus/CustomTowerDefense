@@ -16,6 +16,17 @@ namespace CustomTowerDefense.Screens.BuildPath
 {
     public class BuildPathScreen: GameScreen
     {
+        #region Constants
+
+        // This is the scale increment for ships going out of the vortex.
+        // A higher value will make ships ready to go out faster.
+        private const float PUMP_OUT_OF_VORTEX_SPEED = 0.005f;
+        
+        // For animation purpose only
+        private const float VORTEX_ROTATION_SPEED = 0.01f;
+
+        #endregion
+        
         #region Private Fields
 
         private ushort _numberOfBlocsAvailable;
@@ -38,8 +49,10 @@ namespace CustomTowerDefense.Screens.BuildPath
         private readonly Vortex _endVortex;
         private readonly GridCoordinate _endVortexLogicalCoordinate;
 
-        // The path between the two vortexes
-        private List<PathElement> _path;
+        // The elements composing the path between the two vortexes
+        private List<PathElement> _pathElements;
+        
+        private List<GridCoordinate> _pathCoordinates;
         
         // Colors for elements that may turn red and progressively go back to white.
         private Color _pathColor = Color.White;
@@ -201,8 +214,8 @@ namespace CustomTowerDefense.Screens.BuildPath
             if (IsActive)
             {
                 // Vortexes must turn
-                _startVortex.RotationAngle -= 0.01f;
-                _endVortex.RotationAngle += 0.01f;
+                _startVortex.RotationAngle -= VORTEX_ROTATION_SPEED;
+                _endVortex.RotationAngle += VORTEX_ROTATION_SPEED;
 
                 PumpSpaceShipOutOfVortex();
                 
@@ -232,7 +245,7 @@ namespace CustomTowerDefense.Screens.BuildPath
             }
             
             // We must draw all path elements between the two vortexes
-            foreach (var pathElement in _path)
+            foreach (var pathElement in _pathElements)
             {
                 ScreenManager.SpriteBatch.Draw(
                     TexturesByObjectName[pathElement.GetType().Name],
@@ -360,7 +373,7 @@ namespace CustomTowerDefense.Screens.BuildPath
                 return null;
             }
             
-            _path = new List<PathElement>();
+            _pathElements = new List<PathElement>();
             
             foreach (var currentCoordinate in path)
             {
@@ -371,9 +384,11 @@ namespace CustomTowerDefense.Screens.BuildPath
                     continue;
                 }
                 
-                _path.Add(new PathElement(_gameGrid.GetTopLeftPixelFromLogicalCoordinate(currentCoordinate)));
+                _pathElements.Add(new PathElement(_gameGrid.GetTopLeftPixelFromLogicalCoordinate(currentCoordinate)));
             }
 
+            _pathCoordinates = path;
+            
             return path;
         }
 
@@ -382,15 +397,31 @@ namespace CustomTowerDefense.Screens.BuildPath
         /// </summary>
         private void SpawnNextSpaceShip()
         {
+            var objectInTheVortex = _gameGrid.GetContentAt(_startVortexLogicalCoordinate)
+                ?.FirstOrDefault(o => o.PreciseObjectType != PreciseObjectType.Vortex);
+            
+            // if an object is already in the vortex we cannot spawn another one
+            if (objectInTheVortex != null)
+                return;
+            
+            // First we need to know the final rotation angle to reach the first path element
+            var targetAngle = GetAngleFromTargetSiblingTile(_startVortexLogicalCoordinate, _pathCoordinates[1]);
+            
+            // now we compute the number of necessary steps to reach that angle depending on the pump speed (scale increment)
+            const float initialScale = 0.1f;
+            var numberOfSteps = (1 - initialScale) / PUMP_OUT_OF_VORTEX_SPEED;
+            
+            // The start vortex is turning backward (so the increment is negative so we add value)
+            var initialAngle = targetAngle + (VORTEX_ROTATION_SPEED * numberOfSteps);
+            
             // TODO: take the spaceship from a given list (based on the level), and not that hard-coded value.
             var newSpaceShip = new SmallScoutShip(_gameGrid.GetPixelCenterFromLogicalCoordinate(_startVortexLogicalCoordinate))
             {
-                Scale = 0.1f,
-                RotationAngle = _startVortex.RotationAngle
+                Scale = initialScale,
+                RotationAngle = initialAngle
             };
 
             // The new space ship must be small, and must turn with the start vortex
-
             _gameGrid.AddGameObject(newSpaceShip, _startVortexLogicalCoordinate);
         }
 
@@ -400,22 +431,37 @@ namespace CustomTowerDefense.Screens.BuildPath
         /// </summary>
         private void PumpSpaceShipOutOfVortex()
         {
-            var objectInTheVortex = _gameGrid.GetContentAt(_startVortexLogicalCoordinate)
+            var objectInTheVortex = _gameGrid.GetContentAt(_startVortexLogicalCoordinate, false)
                                               ?.FirstOrDefault(o => o.PreciseObjectType != PreciseObjectType.Vortex);
 
-            if (objectInTheVortex != null)
+            if (objectInTheVortex == null)
+                return;
+
+            // We want the ships to turn at vortex speed.
+            // Since the start vortex is turning backward, we use a negative increment.
+            objectInTheVortex.RotationAngle -= VORTEX_ROTATION_SPEED;
+            
+            if (objectInTheVortex.Scale < 1)
             {
-                objectInTheVortex.RotationAngle = _startVortex.RotationAngle;
-                if (objectInTheVortex.Scale < 1)
-                {
-                    objectInTheVortex.Scale += 0.005f;
-                }
-                else
-                {
-                    _gameGrid.RemoveObjectAt(objectInTheVortex, _startVortexLogicalCoordinate);
-                    SpawnNextSpaceShip();
-                }
+                objectInTheVortex.Scale += 0.005f;
             }
+            else
+            {
+                _gameGrid.RemoveObjectAt(objectInTheVortex, _startVortexLogicalCoordinate);
+                SpawnNextSpaceShip();
+            }
+        }
+
+        private float GetAngleFromTargetSiblingTile(GridCoordinate start, GridCoordinate target)
+        {
+            if (target == start.RightSibling)
+                return MathHelper.PiOver2;
+            if (target == start.BottomSibling)
+                return MathHelper.Pi;
+            if (target == start.LeftSibling)
+                return -MathHelper.PiOver2;
+            //if (target == start.TopSibling)
+                return 0;
         }
 
         private void ProcessClickOnTheLogicalGameGrid(GridCoordinate logicalCoordinate)
