@@ -36,5 +36,26 @@ namespace CustomTowerDefense.Helpers
             //if (target == start.TopSibling)
             return 0;
         }
+        
+        /// <summary>
+        /// Gets the correct rotation increment to be applied in order to turn smoothly,
+        /// depending on the total rotation to do and the number of cycles left to do that rotation.
+        /// </summary>
+        /// <param name="rotationDifference"></param>
+        /// <param name="numberOfCyclesToReachTarget"></param>
+        /// <returns></returns>
+        public static float GetRotationIncrementPerStep(float rotationDifference, float numberOfCyclesToReachTarget)
+        {
+            // First we get a base increment (that would be correct for a constant long turn)
+            var rotationIncrementPerStep = Math.Abs(rotationDifference / numberOfCyclesToReachTarget);
+
+            // But, we want a more pronounced rotation at the beginning, when the rotation difference is high.
+            // The sinus function will help us having that smoothly decreasing intensity.
+            const float  rotationAccelerator = 2f;
+            rotationIncrementPerStep += (rotationIncrementPerStep * (float) (rotationAccelerator * Math.Sin(Math.Abs(rotationDifference))));
+
+            // In all cases we don't want a rotation increment too small, otherwise we ship is going too far to the sides.
+            return Math.Clamp(rotationIncrementPerStep, 0.01f, 1f);
+        }
     }
 }

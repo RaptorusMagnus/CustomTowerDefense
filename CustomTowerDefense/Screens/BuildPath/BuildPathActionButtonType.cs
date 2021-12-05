@@ -3,6 +3,7 @@
     public enum BuildPathActionButtonType
     {
         DoubleGunsTurret,
-        StructureElement
+        StructureElement,
+        StartWaveButton
     }
 }

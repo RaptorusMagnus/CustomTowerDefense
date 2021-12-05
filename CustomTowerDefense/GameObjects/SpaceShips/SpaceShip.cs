@@ -121,10 +121,7 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
             else
             {
                 // several cycles will be necessary, and the angle is significant let's make a progressive turn
-                var rotationIncrementPerStep = Math.Abs(rotationDifference / numberOfCyclesToReachTarget);
-
-                // we want a more pronounced rotation when the rotation difference is high.
-                rotationIncrementPerStep += (rotationIncrementPerStep * (float)(2 * Math.Sin(Math.Abs(rotationDifference))));
+                var rotationIncrementPerStep = AnglesHelper.GetRotationIncrementPerStep(rotationDifference, numberOfCyclesToReachTarget);
 
                 if (RotationAngle > angleToReachTarget)
                 {
@@ -138,13 +135,12 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
 
             // Now that the angle is correct, lets move in that direction!
             var rotationVector = AnglesHelper.AngleToVector(RotationAngle);
-            // we cannot go faster than the speed, so let's correct the the rotation
             Move(rotationVector * Speed);
             
             // Special actions must be undertaken when we reach the next path coordinate
-            // we trigger the transition before actually reaching the precise center of next path coordinate,
-            // because we need to start turning before reaching the center to avoid steep rotations.
-            if (distanceToTarget <= _logicalGameGrid.TilesSize / 2f)
+            // Note that we trigger the transition before actually reaching the precise center of next path coordinate,
+            // because we need to start turning before reaching the center to avoid very steep rotations.
+            if (distanceToTarget <= _logicalGameGrid.TilesSize / 2.5f)
             {
                 CurrentPathIndex++;
                 

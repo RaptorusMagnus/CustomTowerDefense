@@ -25,6 +25,8 @@ namespace CustomTowerDefense.Screens.BuildPath
         // For animation purpose only
         private const float VORTEX_ROTATION_SPEED = 0.01f;
 
+        private const float INITIAL_SCALE_IN_START_VORTEX = 0.1f;
+
         #endregion
         
         #region Private Fields
@@ -93,7 +95,8 @@ namespace CustomTowerDefense.Screens.BuildPath
             _interfaceButtonTypes = new List<BuildPathActionButtonType>
                                     {
                                         BuildPathActionButtonType.DoubleGunsTurret,
-                                        BuildPathActionButtonType.StructureElement
+                                        BuildPathActionButtonType.StructureElement,
+                                        BuildPathActionButtonType.StartWaveButton
                                     };
 
             //
@@ -190,6 +193,9 @@ namespace CustomTowerDefense.Screens.BuildPath
                 case BuildPathActionButtonType.StructureElement:
                     _currentActiveActionButton = BuildPathActionButtonType.StructureElement;
                     break;
+                case BuildPathActionButtonType.StartWaveButton:
+                    _currentActiveActionButton = BuildPathActionButtonType.StartWaveButton;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(clickedButton), $"Unhandled button type: {clickedButton.Value}");
             }
@@ -219,6 +225,7 @@ namespace CustomTowerDefense.Screens.BuildPath
                 _endVortex.RotationAngle += VORTEX_ROTATION_SPEED;
 
                 PumpSpaceShipOutOfVortex();
+                PushSpaceShipInTheEndVortex();
                 
                 foreach (var currentGameObject in _gameGrid.GameObjects)
                 {
@@ -242,7 +249,45 @@ namespace CustomTowerDefense.Screens.BuildPath
             // we must not clear the background here because we want a standard background screen applied.
             ScreenManager.SpriteBatch.Begin();
 
-            foreach (var currentGameObject in _gameGrid.GameObjects)
+            // We must draw all path elements between the two vortexes
+            foreach (var pathElement in _pathElements)
+            {
+                ScreenManager.SpriteBatch.Draw(
+                    TexturesByObjectName[pathElement.GetType().Name],
+                    pathElement.CurrentCoordinate.GetVector2(),
+                    _pathColor);
+            }
+
+            var gameObjects = _gameGrid.GameObjects;
+
+            //
+            //          i     ______
+            //          |   /  |    |\
+            //     _____|_/____|____|  \               _________
+            //    /      |    -|        |            /           \
+            //   {_______|_____|_______/= zzzzzZZZZZZ  Varooooom  ZZZZZZZZ   
+            //      \__/         \__/                \___________/
+            //
+            // TODO: it is ugly to do several loops, we should introduce a draw order in the game objects
+            // vortexes, structure elements first, then turrets, then ships
+            
+            // we must display vortexes first, so that spaceships always come on the top of them
+            var vortexes = gameObjects.Where(go => go.PreciseObjectType == PreciseObjectType.Vortex);
+            foreach (var vortex in vortexes)
+            {
+                ScreenManager.SpriteBatch.Draw(
+                    TexturesByObjectName[vortex.GetType().Name],
+                    vortex.GetScaledRectangle(vortex.Scale),
+                    null,
+                    vortex.CurrentColorEffect,
+                    vortex.RotationAngle,
+                    vortex.RotationOrigin,
+                    SpriteEffects.None,
+                    0);
+            }
+            
+            var otherGameObjects = gameObjects.Where(go => go.PreciseObjectType != PreciseObjectType.Vortex);
+            foreach (var currentGameObject in otherGameObjects)
             {
                 ScreenManager.SpriteBatch.Draw(
                     TexturesByObjectName[currentGameObject.GetType().Name],
@@ -253,15 +298,6 @@ namespace CustomTowerDefense.Screens.BuildPath
                     currentGameObject.RotationOrigin,
                     SpriteEffects.None,
                     0);
-            }
-            
-            // We must draw all path elements between the two vortexes
-            foreach (var pathElement in _pathElements)
-            {
-                ScreenManager.SpriteBatch.Draw(
-                    TexturesByObjectName[pathElement.GetType().Name],
-                    pathElement.CurrentCoordinate.GetVector2(),
-                    _pathColor);
             }
 
             DrawInterfaceButtons(_interfaceButtonTypes);
@@ -297,6 +333,11 @@ namespace CustomTowerDefense.Screens.BuildPath
                     // Second button clicked
                     return BuildPathActionButtonType.StructureElement;
                 }
+                if (coordinate.Y <= 196)
+                {
+                    // Second button clicked
+                    return BuildPathActionButtonType.StartWaveButton;
+                }
             }
 
             return null;
@@ -309,6 +350,7 @@ namespace CustomTowerDefense.Screens.BuildPath
             {
                 BuildPathActionButtonType.DoubleGunsTurret => typeof(DeffenseTurretDoubleGuns),
                 BuildPathActionButtonType.StructureElement => typeof(StructureElement),
+                BuildPathActionButtonType.StartWaveButton => typeof(Vortex),
                 _ => throw new ArgumentOutOfRangeException(nameof(buttonType), buttonType, null)
             };
         }
@@ -317,7 +359,7 @@ namespace CustomTowerDefense.Screens.BuildPath
         {
             if (buttonType == typeof(DeffenseTurretDoubleGuns)) return BuildPathActionButtonType.DoubleGunsTurret;
             if (buttonType == typeof(StructureElement)) return BuildPathActionButtonType.StructureElement;
-
+            if (buttonType == typeof(Vortex)) return BuildPathActionButtonType.StartWaveButton;
             throw new Exception($"Unhandled button type: {buttonType}");
         }
         
@@ -408,6 +450,9 @@ namespace CustomTowerDefense.Screens.BuildPath
         /// </summary>
         private void SpawnNextSpaceShip()
         {
+            if (_currentActiveActionButton != BuildPathActionButtonType.StartWaveButton)
+                return;
+            
             var objectInTheVortex = _gameGrid.GetContentAt(_startVortexLogicalCoordinate)
                 ?.FirstOrDefault(o => o.PreciseObjectType != PreciseObjectType.Vortex);
             
@@ -419,7 +464,7 @@ namespace CustomTowerDefense.Screens.BuildPath
             var targetAngle = AnglesHelper.GetAngleFromTargetSiblingTile(_startVortexLogicalCoordinate, _pathCoordinates[1]);
             
             // now we compute the number of necessary steps to reach that angle depending on the pump speed (scale increment)
-            const float initialScale = 0.1f;
+            const float initialScale = INITIAL_SCALE_IN_START_VORTEX;
             var numberOfSteps = (1 - initialScale) / PUMP_OUT_OF_VORTEX_SPEED;
             
             // The start vortex is turning backward (so the increment is negative so we add value)
@@ -471,6 +516,40 @@ namespace CustomTowerDefense.Screens.BuildPath
                 }
             }
         }
+        
+        /// <summary>
+        /// Does the animation of the space ship going in the end vortex.
+        /// Which is, scaling down to vanish size and turn at same speed than the vortex.
+        /// </summary>
+        private void PushSpaceShipInTheEndVortex()
+        {
+            var objectInTheVortex = _gameGrid.GetContentAt(_endVortexLogicalCoordinate, false)
+                ?.FirstOrDefault(o => o.PreciseObjectType != PreciseObjectType.Vortex);
+
+            if (objectInTheVortex == null)
+            {
+                return;
+            }
+
+            // We want the ships to turn at vortex speed.
+            objectInTheVortex.RotationAngle += VORTEX_ROTATION_SPEED;
+            
+            if (objectInTheVortex.Scale > INITIAL_SCALE_IN_START_VORTEX)
+            {
+                objectInTheVortex.Scale -= PUMP_OUT_OF_VORTEX_SPEED;
+            }
+            else
+            {
+                var spaceship = (SpaceShip) objectInTheVortex;
+                HandleSpaceShipEscapeInEndVortex(spaceship);
+            }
+        }
+
+        private void HandleSpaceShipEscapeInEndVortex(SpaceShip spaceship)
+        {
+            _gameGrid.RemoveObjectAt(spaceship, _endVortexLogicalCoordinate);
+        }
+        
 
         private void ProcessClickOnTheLogicalGameGrid(GridCoordinate logicalCoordinate)
         {
