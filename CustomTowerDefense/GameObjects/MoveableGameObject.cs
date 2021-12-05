@@ -73,11 +73,12 @@ namespace CustomTowerDefense.GameObjects
             if (moveVector.X == 0 && moveVector.Y == 0)
                 return;
 
-            var newCoordinate = new Coordinate(CurrentCoordinate.X + (int)moveVector.X,
-                                               CurrentCoordinate.Y + (int)moveVector.Y);
+            var newCoordinate = new Coordinate(CurrentCoordinate.X + moveVector.X,
+                                               CurrentCoordinate.Y + moveVector.Y);
 
             CurrentCoordinate = newCoordinate;
-            RotationAngle = AnglesHelper.VectorToAngle(moveVector);
+            // TODO: usefull ?
+            //RotationAngle = AnglesHelper.VectorToAngle(moveVector);
         }
 
         #endregion // Methods

@@ -99,6 +99,15 @@ namespace CustomTowerDefense.GameGrids
         }
 
         /// <summary>
+        /// Logically moves a game object from one location to the new one on the grid.
+        /// </summary>
+        public void MoveObjectLogically([NotNull] GameObject objectToMove, GridCoordinate currentCoordinate, GridCoordinate targetCoordinate)
+        {
+            RemoveObjectAt(objectToMove, currentCoordinate);
+            AddGameObject(objectToMove, targetCoordinate);
+        }
+        
+        /// <summary>
         /// Gets a single object per location grid from current grid,
         /// by taking only the first element of the correct type for each cell.
         /// </summary>

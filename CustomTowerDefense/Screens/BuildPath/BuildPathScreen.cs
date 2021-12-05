@@ -220,6 +220,16 @@ namespace CustomTowerDefense.Screens.BuildPath
 
                 PumpSpaceShipOutOfVortex();
                 
+                foreach (var currentGameObject in _gameGrid.GameObjects)
+                {
+                    // Spaceships can do several things, that could possibly require several cycles to accomplish.
+                    // we don't care too much about what they do, we must just tell them to keep doing it. 
+                    if (currentGameObject is SpaceShip currentSpaceShip)
+                    {
+                        currentSpaceShip.DoCurrentAction();
+                    }
+                }
+                
                 // When the path or any other element is not of the correct color (the case after an error),
                 // we set it progressively back to white.
                 _pathColor = FaderHelper.GetNextFadeBackToWhiteColor(_pathColor);
@@ -439,7 +449,10 @@ namespace CustomTowerDefense.Screens.BuildPath
                                               ?.FirstOrDefault(o => o.PreciseObjectType != PreciseObjectType.Vortex);
 
             if (objectInTheVortex == null)
+            {
+                SpawnNextSpaceShip();
                 return;
+            }
 
             // We want the ships to turn at vortex speed.
             // Since the start vortex is turning backward, we use a negative increment.
@@ -451,8 +464,11 @@ namespace CustomTowerDefense.Screens.BuildPath
             }
             else
             {
-                _gameGrid.RemoveObjectAt(objectInTheVortex, _startVortexLogicalCoordinate);
-                SpawnNextSpaceShip();
+                var spaceship = (SpaceShip) objectInTheVortex;
+                if (spaceship.CurrentAction != SpaceshipAction.MoveToNextPathLocation)
+                {
+                    spaceship.StartFollowingPath();
+                }
             }
         }
 

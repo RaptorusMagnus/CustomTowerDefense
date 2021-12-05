@@ -8,7 +8,7 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
     {
         private const int WIDTH = 60;
         private const int HEIGHT = 50;
-        private const float SPEED = 10f;
+        private const float SPEED = 1.5f;
         public const string ImagePathAndName = @"Sprites\Spaceship_0002_small";
         
         public SmallScoutShip(Coordinate coordinate, List<GridCoordinate> path, LogicalGameGridMultiple logicalGameGrid):
