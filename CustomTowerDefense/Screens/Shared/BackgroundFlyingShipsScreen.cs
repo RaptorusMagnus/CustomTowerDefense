@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using CustomTowerDefense.GameGrids;
 using CustomTowerDefense.GameObjects.SpaceShips;
 using CustomTowerDefense.Shared;
 using GameStateManagement;
@@ -31,7 +33,9 @@ namespace CustomTowerDefense.Screens.Shared
 
         public BackgroundFlyingShipsScreen()
         {
-            _smallScoutShip = new SmallScoutShip(new Coordinate(200, 200));
+            var gameGrid = new LogicalGameGridMultiple(TowerDefenseGame.TILES_SIZE, 0, 0);
+            var path = new List<GridCoordinate>();
+            _smallScoutShip = new SmallScoutShip(new Coordinate(200, 200), path, gameGrid);
         }
 
 

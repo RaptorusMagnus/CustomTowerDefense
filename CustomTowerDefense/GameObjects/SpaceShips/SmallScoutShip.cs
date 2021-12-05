@@ -1,16 +1,18 @@
-﻿using CustomTowerDefense.Shared;
+﻿using System.Collections.Generic;
+using CustomTowerDefense.GameGrids;
+using CustomTowerDefense.Shared;
 
 namespace CustomTowerDefense.GameObjects.SpaceShips
 {
-    public class SmallScoutShip: MoveableGameObject
+    public class SmallScoutShip: SpaceShip
     {
         private const int WIDTH = 60;
         private const int HEIGHT = 50;
         private const float SPEED = 10f;
         public const string ImagePathAndName = @"Sprites\Spaceship_0002_small";
         
-        public SmallScoutShip(Coordinate coordinate):
-            base(coordinate, WIDTH, HEIGHT, PreciseObjectType.SmallScoutShip, SPEED)
+        public SmallScoutShip(Coordinate coordinate, List<GridCoordinate> path, LogicalGameGridMultiple logicalGameGrid):
+            base(coordinate, WIDTH, HEIGHT, PreciseObjectType.SmallScoutShip, SPEED, path, logicalGameGrid)
         {
             
         }

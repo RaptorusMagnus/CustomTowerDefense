@@ -22,9 +22,9 @@ namespace CustomTowerDefense.GameGrids
         public const ushort Y_SIZE = 7;
 
 
-        public ushort TilesSize { get; init; }
-        protected ushort XOffset { get; init; }
-        protected ushort YOffset { get; init; }
+        public ushort TilesSize { get; }
+        protected ushort XOffset { get; }
+        protected ushort YOffset { get; }
 
         #region Properties
 

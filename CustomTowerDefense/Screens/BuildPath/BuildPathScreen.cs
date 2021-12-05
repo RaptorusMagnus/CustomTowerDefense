@@ -108,7 +108,7 @@ namespace CustomTowerDefense.Screens.BuildPath
             //  
             // TODO: This hard-coded value is just a test, it will later be function of the level and game rules
             _numberOfBlocsAvailable = 18;
-            
+
             SpawnNextSpaceShip();
         }
         
@@ -416,7 +416,10 @@ namespace CustomTowerDefense.Screens.BuildPath
             var initialAngle = targetAngle + (VORTEX_ROTATION_SPEED * numberOfSteps);
             
             // TODO: take the spaceship from a given list (based on the level), and not that hard-coded value.
-            var newSpaceShip = new SmallScoutShip(_gameGrid.GetPixelCenterFromLogicalCoordinate(_startVortexLogicalCoordinate))
+            var newSpaceShip = new SmallScoutShip(
+                _gameGrid.GetPixelCenterFromLogicalCoordinate(_startVortexLogicalCoordinate),
+                _pathCoordinates,
+                _gameGrid)
             {
                 Scale = initialScale,
                 RotationAngle = initialAngle
