@@ -47,9 +47,10 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
             int height,
             PreciseObjectType preciseObjectType,
             float speed,
+            int drawOrder,
             List<GridCoordinate> path,
             LogicalGameGridMultiple logicalGameGrid)
-            : base(coordinate, width, height, preciseObjectType, speed)
+            : base(coordinate, width, height, preciseObjectType, speed, drawOrder)
         {
             Path = path;
             CurrentPathIndex = 0;
@@ -94,24 +95,31 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
         /// </summary>
         protected void FollowPath()
         {
-            if (CurrentPathIndex == Path.Count - 1)
-            {
-                // we don't move further when the last path index is reached.
-                return;
-            }
+            var lastPathIndex = Path.Count - 1;
+            var targetPathIndex = CurrentPathIndex == lastPathIndex ? lastPathIndex : CurrentPathIndex + 1;
+                
+            var targetPhysicalLocation = _logicalGameGrid.GetPixelCenterFromLogicalCoordinate(Path[targetPathIndex]).GetVector2();
 
-            // We must handle possible rotations when next path coordinate is not in front of the spaceship.
             var currentCoordinate = GetCurrentCoordinateAsVector();
-            var targetPhysicalLocation = _logicalGameGrid.GetPixelCenterFromLogicalCoordinate(Path[CurrentPathIndex + 1]).GetVector2();
-            var angleToReachTarget = AnglesHelper.GetAngleToReachTarget(currentCoordinate, targetPhysicalLocation);
-            
             var distanceToTarget = Vector2.Distance(currentCoordinate, targetPhysicalLocation);
 
-            var numberOfCyclesToReachTarget = distanceToTarget / Speed;
+            // Every good thing has an end!
+            // When reaching the end of the path and when physically in the end vortex, we must stop following the path.
+            if (CurrentPathIndex == lastPathIndex &&
+                distanceToTarget <= Speed)
+            {
+                CurrentAction = SpaceshipAction.GoingInVortex;
+                Coordinate = new Coordinate(targetPhysicalLocation.X, targetPhysicalLocation.Y);
+                return;
+            }
             
-            // Are we in front of the next path location ?
+            // We must handle possible rotations when next path coordinate is not in front of the spaceship.
+            var angleToReachTarget = AnglesHelper.GetAngleToReachTarget(currentCoordinate, targetPhysicalLocation);
             var rotationDifference = RotationAngle - angleToReachTarget;
 
+            // We must know many cycles we have before reaching the target, to compute the best trajectory. 
+            var numberOfCyclesToReachTarget = distanceToTarget / Speed;
+            
             if (Math.Abs(rotationDifference) < 0.1f || numberOfCyclesToReachTarget <= 1)
             {
                 // we don't spread the rotation on next moves when the difference is so small that we would not see the difference.
@@ -137,21 +145,37 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
             var rotationVector = AnglesHelper.AngleToVector(RotationAngle);
             Move(rotationVector * Speed);
             
+            // Note that we trigger trajectory transition before actually reaching the precise center of next path coordinate,
+            // because we need to start turning before reaching the center, to avoid very steep/weird rotations.
+            // 0.63 is an empirical number. After several tests, it gives nice results.
+            // A higher value gives a smooth trajectory with large curves. A lower value keeps the spaceship more strictly on the path.
+            // /!\ don't mess to much with it because a wrong value can lead to some weird trajectories,
+            // and even bugs when the spaceships miss their target due to a bad trajectory.
+            // If you face trajectory bugs their are 3 parameters to keep in mind:
+            // pilotAnticipationForTurning, the GetRotationIncrementPerStep method and the test on rotationDifference in this method.
+            float pilotAnticipationForTurning = _logicalGameGrid.TilesSize * 0.63f;
+            
+            //
+            //          _,
+            //     -==<' `\
+            //         ) /
+            //        / (_.
+            //       | ,-,`\
+            //        \\  \ \
+            //         `\, \ \
+            //          ||\ \`|,
+            //         _|| `=`-'
+            //
+            // TODO: We should clearly not move to next logical cell in the grid when we are not physically in.
+            // TODO: pilot anticipation should apply only for the trajectory computation not for cell transitions. This will lead to bugs for sure.
             // Special actions must be undertaken when we reach the next path coordinate
-            // Note that we trigger the transition before actually reaching the precise center of next path coordinate,
-            // because we need to start turning before reaching the center to avoid very steep rotations.
-            if (distanceToTarget <= _logicalGameGrid.TilesSize / 2.5f)
+            if (CurrentPathIndex < lastPathIndex &&
+                distanceToTarget <= pilotAnticipationForTurning)
             {
                 CurrentPathIndex++;
                 
                 // We must tell the grid that we have just changed our logical coordinate.
                 _logicalGameGrid.MoveObjectLogically(this, Path[CurrentPathIndex - 1], Path[CurrentPathIndex]);
-                
-                // when reaching the end of the path, we must make sure we don't go further than the target location.
-                if (CurrentPathIndex == Path.Count - 1)
-                {
-                    CurrentCoordinate = _logicalGameGrid.GetPixelCenterFromLogicalCoordinate(Path.Last());
-                }
             }
         }
     }

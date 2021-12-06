@@ -65,11 +65,11 @@ namespace CustomTowerDefense.Screens.Shared
 
             // We do not test the IsActive property here because this screen is a background
             // It is not actually the active screen but must always be updated 
-            if (_smallScoutShip.CurrentCoordinate.X > TowerDefenseGame.ASPECT_RATIO_WIDTH)
+            if (_smallScoutShip.Coordinate.X > TowerDefenseGame.ASPECT_RATIO_WIDTH)
             {
                 goRight = false;
             }
-            else if (_smallScoutShip.CurrentCoordinate.X < 0)
+            else if (_smallScoutShip.Coordinate.X < 0)
             {
                 goRight = true;
             }
@@ -114,7 +114,7 @@ namespace CustomTowerDefense.Screens.Shared
                 _smallScoutSprite,
                 _smallScoutShip.GetRectangle(),
                 null,
-                _smallScoutShip.CurrentColorEffect,
+                _smallScoutShip.ColorEffect,
                 _smallScoutShip.RotationAngle,
                 _smallScoutShip.RotationOrigin,
                 SpriteEffects.None,

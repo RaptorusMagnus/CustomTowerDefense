@@ -55,7 +55,7 @@ namespace CustomTowerDefense.Helpers
             rotationIncrementPerStep += (rotationIncrementPerStep * (float) (rotationAccelerator * Math.Sin(Math.Abs(rotationDifference))));
 
             // In all cases we don't want a rotation increment too small, otherwise we ship is going too far to the sides.
-            return Math.Clamp(rotationIncrementPerStep, 0.01f, 1f);
+            return Math.Clamp(rotationIncrementPerStep, 0.01f, 10f);
         }
     }
 }

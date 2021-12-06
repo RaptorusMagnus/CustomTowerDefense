@@ -84,7 +84,7 @@ namespace CustomTowerDefense.Screens.BuildPath
             _endVortexLogicalCoordinate = new GridCoordinate(11, 6);
             _endVortex = new Vortex(_gameGrid.GetPixelCenterFromLogicalCoordinate(_endVortexLogicalCoordinate))
                          {
-                             CurrentColorEffect = Color.Red
+                             ColorEffect = Color.Red
                          };
             _gameGrid.AddGameObject(_endVortex, _endVortexLogicalCoordinate);
 
@@ -254,48 +254,21 @@ namespace CustomTowerDefense.Screens.BuildPath
             {
                 ScreenManager.SpriteBatch.Draw(
                     TexturesByObjectName[pathElement.GetType().Name],
-                    pathElement.CurrentCoordinate.GetVector2(),
+                    pathElement.Coordinate.GetVector2(),
                     _pathColor);
             }
 
-            var gameObjects = _gameGrid.GameObjects;
+            var gameObjects = _gameGrid.GameObjects.OrderBy(go => go.DrawOrder);
 
-            //
-            //          i     ______
-            //          |   /  |    |\
-            //     _____|_/____|____|  \               _________
-            //    /      |    -|        |            /           \
-            //   {_______|_____|_______/= zzzzzZZZZZZ  Varooooom  ZZZZZZZZ   
-            //      \__/         \__/                \___________/
-            //
-            // TODO: it is ugly to do several loops, we should introduce a draw order in the game objects
-            // vortexes, structure elements first, then turrets, then ships
-            
-            // we must display vortexes first, so that spaceships always come on the top of them
-            var vortexes = gameObjects.Where(go => go.PreciseObjectType == PreciseObjectType.Vortex);
-            foreach (var vortex in vortexes)
+            foreach (var vortex in gameObjects)
             {
                 ScreenManager.SpriteBatch.Draw(
                     TexturesByObjectName[vortex.GetType().Name],
                     vortex.GetScaledRectangle(vortex.Scale),
                     null,
-                    vortex.CurrentColorEffect,
+                    vortex.ColorEffect,
                     vortex.RotationAngle,
                     vortex.RotationOrigin,
-                    SpriteEffects.None,
-                    0);
-            }
-            
-            var otherGameObjects = gameObjects.Where(go => go.PreciseObjectType != PreciseObjectType.Vortex);
-            foreach (var currentGameObject in otherGameObjects)
-            {
-                ScreenManager.SpriteBatch.Draw(
-                    TexturesByObjectName[currentGameObject.GetType().Name],
-                    currentGameObject.GetScaledRectangle(currentGameObject.Scale),
-                    null,
-                    currentGameObject.CurrentColorEffect,
-                    currentGameObject.RotationAngle,
-                    currentGameObject.RotationOrigin,
                     SpriteEffects.None,
                     0);
             }
@@ -385,13 +358,13 @@ namespace CustomTowerDefense.Screens.BuildPath
                     throw new Exception($"Impossible to generate a button from current type: {currentButtonObjectType}");
                 
                 if (_currentActiveActionButton != GetButtonTypeFromObjectType(currentButtonObjectType))
-                    currentButton.CurrentColorEffect = dimmedColorEffect;
+                    currentButton.ColorEffect = dimmedColorEffect;
                 
                 ScreenManager.SpriteBatch.Draw(
                     TexturesByObjectName[currentButton.GetType().Name],
                     currentButton.GetScaledRectangle(buttonScale),
                     null,
-                    currentButton.CurrentColorEffect,
+                    currentButton.ColorEffect,
                     currentButton.RotationAngle,
                     currentButton.RotationOrigin,
                     SpriteEffects.None,
@@ -598,8 +571,8 @@ namespace CustomTowerDefense.Screens.BuildPath
                         // there is a structure element, we can build a turret on it
                         var newTurret = new DeffenseTurretDoubleGuns(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate));
 
-                        newTurret.RotationAngle = AnglesHelper.GetAngleToReachTarget(newTurret.CurrentCoordinate.GetVector2(),
-                                                                                     _startVortex.CurrentCoordinate.GetVector2());
+                        newTurret.RotationAngle = AnglesHelper.GetAngleToReachTarget(newTurret.Coordinate.GetVector2(),
+                                                                                     _startVortex.Coordinate.GetVector2());
                         
                         _gameGrid.AddGameObject(newTurret, logicalCoordinate);
                     }

@@ -28,7 +28,7 @@ namespace CustomTowerDefense.GameObjects
         /// </summary>
         public Vector2 CurrentDirection { get; set; }
 
-        public override Coordinate CurrentCoordinate
+        public override Coordinate Coordinate
         {
             get
             {
@@ -55,8 +55,14 @@ namespace CustomTowerDefense.GameObjects
 
         #region ----- Constructors -----
 
-        public MoveableGameObject(Coordinate coordinate, int width, int height, PreciseObjectType preciseObjectType, float speed)
-            : base(coordinate, width, height, preciseObjectType)
+        public MoveableGameObject(
+            Coordinate coordinate,
+            int width,
+            int height,
+            PreciseObjectType preciseObjectType,
+            float speed,
+            int drawOrder)
+            : base(coordinate, width, height, preciseObjectType, drawOrder)
         {
             LastMoveTime = DateTime.Now;
             CurrentDirection = Vector2.Zero;
@@ -73,10 +79,10 @@ namespace CustomTowerDefense.GameObjects
             if (moveVector.X == 0 && moveVector.Y == 0)
                 return;
 
-            var newCoordinate = new Coordinate(CurrentCoordinate.X + moveVector.X,
-                                               CurrentCoordinate.Y + moveVector.Y);
+            var newCoordinate = new Coordinate(Coordinate.X + moveVector.X,
+                                               Coordinate.Y + moveVector.Y);
 
-            CurrentCoordinate = newCoordinate;
+            Coordinate = newCoordinate;
             // TODO: usefull ?
             //RotationAngle = AnglesHelper.VectorToAngle(moveVector);
         }

@@ -15,7 +15,7 @@ namespace CustomTowerDefense.GameObjects
     {
         #region Private fields
 
-        private Coordinate _currentCoordinate;
+        private Coordinate _coordinate;
         
         private int RotationPointDistanceX => Width / 2;
         private int RotationPointDistanceY => Height / 2;
@@ -24,27 +24,44 @@ namespace CustomTowerDefense.GameObjects
         
         
         #region ----- Public Properties -----
+        
+        /// <summary>
+        /// To be able to sort objects list in the correct order when drawing all elements.
+        /// e.g. structure elements and vortexes must be drawn first and spaceships above.
+        /// </summary>
+        public int DrawOrder { get; set; }
 
         public PreciseObjectType PreciseObjectType { get; }
 
         public float RotationAngle { get; set; }
         
-        public virtual Coordinate CurrentCoordinate
+        public virtual Coordinate Coordinate
         {
-            get => _currentCoordinate;
-            set => _currentCoordinate = value;
+            get => _coordinate;
+            set => _coordinate = value;
         }
 
+        /// <summary>
+        /// Object width (texture width in fact),
+        /// because we don't have the texture in this object, as explained in the class comment 
+        /// </summary>
         public int Width { get; }
 
+        /// <summary>
+        /// Object Height (texture height in fact),
+        /// because we don't have the texture in this object, as explained in the class comment 
+        /// </summary>
         public int Height { get; }
         
+        /// <summary>
+        /// Current scale applied to the object
+        /// </summary>
         public float Scale { get; set; }
 
         /// <summary>
         /// Current color effect, applied on the object. Color.White == no effect
         /// </summary>
-        public Color CurrentColorEffect { get; set; }
+        public Color ColorEffect { get; set; }
 
         public Vector2 RotationOrigin => new Vector2(Width / 2, Height / 2);
 
@@ -52,8 +69,8 @@ namespace CustomTowerDefense.GameObjects
         {
             get
             {
-                var topLeftX = (int)CurrentCoordinate.X - (int)RotationOrigin.X;
-                var topLeftY = (int)CurrentCoordinate.Y - (int)RotationOrigin.Y;
+                var topLeftX = (int)Coordinate.X - (int)RotationOrigin.X;
+                var topLeftY = (int)Coordinate.Y - (int)RotationOrigin.Y;
 
                 return new Rectangle(
                     topLeftX, topLeftY,
@@ -71,14 +88,16 @@ namespace CustomTowerDefense.GameObjects
             Coordinate coordinate,
             int width,
             int height,
-            PreciseObjectType preciseObjectType)
+            PreciseObjectType preciseObjectType,
+            int drawOrder)
         {
-            _currentCoordinate = coordinate;
+            _coordinate = coordinate;
             Width = width;
             Height = height;
-            CurrentColorEffect = Color.White;
+            ColorEffect = Color.White;
             PreciseObjectType = preciseObjectType;
             Scale = 1f;
+            DrawOrder = drawOrder;
         }
 
         #endregion // Constructors
@@ -89,43 +108,43 @@ namespace CustomTowerDefense.GameObjects
         /// </summary>
         public void CorrectCoordinateAfterOuterBoundControl(int screenWidth, int screenHeight)
         {
-            float newX = CurrentCoordinate.X;
-            float newY = CurrentCoordinate.Y;
+            float newX = Coordinate.X;
+            float newY = Coordinate.Y;
 
-            if ((CurrentCoordinate.X + RotationPointDistanceX) > screenWidth)
+            if ((Coordinate.X + RotationPointDistanceX) > screenWidth)
             {
                 newX = screenWidth - RotationPointDistanceX;
             }
-            else if ((CurrentCoordinate.X - RotationPointDistanceX) < 0)
+            else if ((Coordinate.X - RotationPointDistanceX) < 0)
             {
                 newX = RotationPointDistanceX;
             }
 
-            if ((CurrentCoordinate.Y + RotationPointDistanceY) > screenHeight)
+            if ((Coordinate.Y + RotationPointDistanceY) > screenHeight)
             {
                 newY = screenHeight - RotationPointDistanceY;
             }
-            else if ((CurrentCoordinate.Y - RotationPointDistanceY) < 0)
+            else if ((Coordinate.Y - RotationPointDistanceY) < 0)
             {
                 newY = RotationPointDistanceY;
             }
 
-            CurrentCoordinate = new Coordinate(newX, newY);
+            Coordinate = new Coordinate(newX, newY);
         }
 
         public Vector2 GetCurrentCoordinateAsVector()
         {
-            return new Vector2(CurrentCoordinate.X, CurrentCoordinate.Y);
+            return new Vector2(Coordinate.X, Coordinate.Y);
         }
 
         public Rectangle GetRectangle()
         {
-            return new((int)CurrentCoordinate.X, (int)CurrentCoordinate.Y, Width, Height);
+            return new((int)Coordinate.X, (int)Coordinate.Y, Width, Height);
         }
         
         public Rectangle GetScaledRectangle(float scale)
         {
-            return new((int)CurrentCoordinate.X, (int)CurrentCoordinate.Y, (int) (Width * scale), (int) (Height * scale));
+            return new((int)Coordinate.X, (int)Coordinate.Y, (int) (Width * scale), (int) (Height * scale));
         }
     }
 }
