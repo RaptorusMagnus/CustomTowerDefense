@@ -15,6 +15,12 @@ This project was designed with the following goals in mind:
 Required features (Not yet done)
 * Allow custom level building with an external descriptive text file (json or xml).
 
+## Roadmap
+See: https://github.com/RaptorusMagnus/CustomTowerDefense/wiki/Roadmap
+
+## Contact
+Feel free to contact me for any question or remarks. You can use the email address of my GitHub profile page.
+
 ## Tutorials used to learn and build this game
 When starting from scratch, I found it usefull to watch relatively short videos, or read short articles to build a very little (but functional), game in few minutes/hours.
 But, the main problem is that short and simple introductions, tend to give poor architectures. I ended up refactoring my code several times to reach the actual version and I wasted quite some time.
