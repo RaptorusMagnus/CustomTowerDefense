@@ -1,10 +1,13 @@
 ﻿using System;
-using CustomTowerDefense.Helpers;
 using CustomTowerDefense.Shared;
 using Microsoft.Xna.Framework;
 
 namespace CustomTowerDefense.GameObjects
 {
+    /// <summary>
+    /// Base class for game objects that have move capabilities.
+    /// They have a speed, a direction and of course a Move method.
+    /// </summary>
     public class MoveableGameObject: GameObject
     {
         #region ----- Fields -----
@@ -26,7 +29,7 @@ namespace CustomTowerDefense.GameObjects
         /// <summary>
         /// To know where the game object is heading
         /// </summary>
-        public Vector2 CurrentDirection { get; set; }
+        public Vector2 Direction { get; set; }
 
         public override Coordinate Coordinate
         {
@@ -65,7 +68,7 @@ namespace CustomTowerDefense.GameObjects
             : base(coordinate, width, height, preciseObjectType, drawOrder)
         {
             LastMoveTime = DateTime.Now;
-            CurrentDirection = Vector2.Zero;
+            Direction = Vector2.Zero;
             Speed = speed;
             _currentCoordinate = coordinate;
         }
@@ -83,8 +86,6 @@ namespace CustomTowerDefense.GameObjects
                                                Coordinate.Y + moveVector.Y);
 
             Coordinate = newCoordinate;
-            // TODO: usefull ?
-            //RotationAngle = AnglesHelper.VectorToAngle(moveVector);
         }
 
         #endregion // Methods

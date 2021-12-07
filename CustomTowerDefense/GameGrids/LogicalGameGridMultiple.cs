@@ -34,7 +34,7 @@ namespace CustomTowerDefense.GameGrids
                 {
                     if (objectsList != null)
                     {
-                        returnedList.AddRange(objectsList);                        
+                        returnedList.AddRange(objectsList);
                     }
                 }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CustomTowerDefense.GameGrids;
 using CustomTowerDefense.GameObjects;
+using CustomTowerDefense.GameObjects.DefenseTurrets;
 using CustomTowerDefense.GameObjects.SpaceShips;
 using CustomTowerDefense.Helpers;
 using CustomTowerDefense.Shared;
@@ -134,7 +135,7 @@ namespace CustomTowerDefense.Screens.BuildPath
                 TexturesByObjectName.Add(nameof(PathElement), _contentManager.Load<Texture2D>(PathElement.ImagePathAndName));
                 TexturesByObjectName.Add(nameof(Vortex), _contentManager.Load<Texture2D>(Vortex.ImagePathAndName));
                 TexturesByObjectName.Add(nameof(StructureElement), _contentManager.Load<Texture2D>(StructureElement.ImagePathAndName));
-                TexturesByObjectName.Add(nameof(DeffenseTurretDoubleGuns), _contentManager.Load<Texture2D>(DeffenseTurretDoubleGuns.ImagePathAndName));
+                TexturesByObjectName.Add(nameof(DefenseTurretDoubleGuns), _contentManager.Load<Texture2D>(DefenseTurretDoubleGuns.ImagePathAndName));
                 TexturesByObjectName.Add(nameof(SmallScoutShip), _contentManager.Load<Texture2D>(SmallScoutShip.ImagePathAndName));
             }
         }
@@ -321,7 +322,7 @@ namespace CustomTowerDefense.Screens.BuildPath
         {
             return buttonType switch
             {
-                BuildPathActionButtonType.DoubleGunsTurret => typeof(DeffenseTurretDoubleGuns),
+                BuildPathActionButtonType.DoubleGunsTurret => typeof(DefenseTurretDoubleGuns),
                 BuildPathActionButtonType.StructureElement => typeof(StructureElement),
                 BuildPathActionButtonType.StartWaveButton => typeof(Vortex),
                 _ => throw new ArgumentOutOfRangeException(nameof(buttonType), buttonType, null)
@@ -330,7 +331,7 @@ namespace CustomTowerDefense.Screens.BuildPath
 
         private static BuildPathActionButtonType GetButtonTypeFromObjectType(Type buttonType)
         {
-            if (buttonType == typeof(DeffenseTurretDoubleGuns)) return BuildPathActionButtonType.DoubleGunsTurret;
+            if (buttonType == typeof(DefenseTurretDoubleGuns)) return BuildPathActionButtonType.DoubleGunsTurret;
             if (buttonType == typeof(StructureElement)) return BuildPathActionButtonType.StructureElement;
             if (buttonType == typeof(Vortex)) return BuildPathActionButtonType.StartWaveButton;
             throw new Exception($"Unhandled button type: {buttonType}");
@@ -556,7 +557,7 @@ namespace CustomTowerDefense.Screens.BuildPath
                     if (gameObjects?.Count > 1)
                     {
                         // It must be possible to remove an existing turret
-                        if (gameObjects[1].GetType() == typeof(DeffenseTurretDoubleGuns))
+                        if (gameObjects[1].GetType() == typeof(DefenseTurretDoubleGuns))
                         {
                             _gameGrid.RemoveObjectAt(gameObjects[1], logicalCoordinate);
                         }
@@ -569,7 +570,7 @@ namespace CustomTowerDefense.Screens.BuildPath
                     if (gameObjects?.First() is StructureElement)
                     {
                         // there is a structure element, we can build a turret on it
-                        var newTurret = new DeffenseTurretDoubleGuns(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate));
+                        var newTurret = new DefenseTurretDoubleGuns(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate));
 
                         newTurret.RotationAngle = AnglesHelper.GetAngleToReachTarget(newTurret.Coordinate.GetVector2(),
                                                                                      _startVortex.Coordinate.GetVector2());

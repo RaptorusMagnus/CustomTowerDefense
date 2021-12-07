@@ -11,12 +11,12 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
     /// <summary>
     /// Base class for all spaceships, with specific behaviors.
     /// </summary>
-    public abstract class SpaceShip: MoveableGameObject
+    public abstract class SpaceShip: MoveableGameObject, IAutonomousBehavior
     {
         #region Private members
 
-        // To code some behaviors we need information concerning the surroundings  
-        private LogicalGameGridMultiple _logicalGameGrid;
+        // To code some behaviors we need information concerning the surroundings
+        private readonly LogicalGameGridMultiple _logicalGameGrid;
 
         #endregion
         
@@ -63,6 +63,7 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
         /// <summary>
         /// Requests the ship to go on doing what it was doing previously (whatever it was):
         /// continue its move along the path, or keep getting out of the vortex, or keep going in the end vortex,...
+        /// This method can be called at each update cycle.
         /// </summary>
         public void DoCurrentAction()
         {
@@ -155,25 +156,15 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
             // pilotAnticipationForTurning, the GetRotationIncrementPerStep method and the test on rotationDifference in this method.
             float pilotAnticipationForTurning = _logicalGameGrid.TilesSize * 0.63f;
             
-            //
-            //          _,
-            //     -==<' `\
-            //         ) /
-            //        / (_.
-            //       | ,-,`\
-            //        \\  \ \
-            //         `\, \ \
-            //          ||\ \`|,
-            //         _|| `=`-'
-            //
-            // TODO: We should clearly not move to next logical cell in the grid when we are not physically in.
-            // TODO: pilot anticipation should apply only for the trajectory computation not for cell transitions. This will lead to bugs for sure.
             // Special actions must be undertaken when we reach the next path coordinate
             if (CurrentPathIndex < lastPathIndex &&
                 distanceToTarget <= pilotAnticipationForTurning)
             {
                 CurrentPathIndex++;
                 
+                // because of target path element anticipations and possible large curves when turning,
+                // we are never 100% sure that the spaceship is physically on the exact path.
+                // in any case we keep track of the progress on the path.
                 // We must tell the grid that we have just changed our logical coordinate.
                 _logicalGameGrid.MoveObjectLogically(this, Path[CurrentPathIndex - 1], Path[CurrentPathIndex]);
             }
