@@ -33,7 +33,7 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
         /// We don't want to recompute endlessly current path index from physical location,
         /// so we keep current index, and we easily know that the next index is the target location.
         /// </summary>
-        protected ushort CurrentPathIndex { get; private set; }
+        public ushort CurrentPathIndex { get; private set; }
         
         public SpaceshipAction CurrentAction { get; private set; }
 

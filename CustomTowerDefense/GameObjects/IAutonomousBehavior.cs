@@ -6,6 +6,11 @@
     /// </summary>
     public interface IAutonomousBehavior
     {
+        /// <summary>
+        /// Triggers one more step for the action that was being done by the game object.
+        /// Something like "Go on doing what ever you were doing". e.g. moving, firing, following the path,...
+        /// This method is supposed to be called in the Update refresh cycle.
+        /// </summary>
         void DoCurrentAction();
     }
 }

@@ -1,4 +1,5 @@
-﻿using CustomTowerDefense.Shared;
+﻿using CustomTowerDefense.GameGrids;
+using CustomTowerDefense.Shared;
 
 namespace CustomTowerDefense.GameObjects.DefenseTurrets
 {
@@ -12,14 +13,15 @@ namespace CustomTowerDefense.GameObjects.DefenseTurrets
         
         public const string ImagePathAndName = @"Sprites\turet03_64";
         
-        public DefenseTurretDoubleGuns(Coordinate coordinate)
+        public DefenseTurretDoubleGuns(Coordinate coordinate, LogicalGameGridMultiple logicalGameGrid)
             : base(coordinate,
                    WIDTH,
                    HEIGHT,
                    PreciseObjectType.DoubleGunsDefenseTurret,
                    DRAW_ORDER,
                    SIGHT_RANGE,
-                   ROTATION_SPEED)
+                   ROTATION_SPEED,
+                   logicalGameGrid)
         {
         }
     }

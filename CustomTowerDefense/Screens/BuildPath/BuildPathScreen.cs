@@ -230,11 +230,12 @@ namespace CustomTowerDefense.Screens.BuildPath
                 
                 foreach (var currentGameObject in _gameGrid.GameObjects)
                 {
-                    // Spaceships can do several things, that could possibly require several cycles to accomplish.
+                    // Spaceships, turrets and other objects can do some actions,
+                    // that could possibly require several cycles to accomplish.
                     // we don't care too much about what they do, we must just tell them to keep doing it. 
-                    if (currentGameObject is SpaceShip currentSpaceShip)
+                    if (currentGameObject is IAutonomousBehavior autonomousBehaviorObject)
                     {
-                        currentSpaceShip.DoCurrentAction();
+                        autonomousBehaviorObject.DoCurrentAction();
                     }
                 }
                 
@@ -353,7 +354,16 @@ namespace CustomTowerDefense.Screens.BuildPath
             foreach (var currentButtonObjectType in buttonsList)
             {
                 var currentButtonCoordinate = new Coordinate(xPosition, currentOffsetY);
-                var currentButton = (GameObject)Activator.CreateInstance(currentButtonObjectType, currentButtonCoordinate);
+                GameObject currentButton;
+                if (currentButtonObjectType == typeof(DefenseTurretDoubleGuns))
+                {
+                    currentButton = (GameObject)Activator.CreateInstance(currentButtonObjectType, currentButtonCoordinate, _gameGrid);
+                }
+                else
+                {
+                    currentButton = (GameObject) Activator.CreateInstance(currentButtonObjectType, currentButtonCoordinate);
+                }
+
 
                 if (currentButton == null)
                     throw new Exception($"Impossible to generate a button from current type: {currentButtonObjectType}");
@@ -570,7 +580,8 @@ namespace CustomTowerDefense.Screens.BuildPath
                     if (gameObjects?.First() is StructureElement)
                     {
                         // there is a structure element, we can build a turret on it
-                        var newTurret = new DefenseTurretDoubleGuns(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate));
+                        var newTurret = new DefenseTurretDoubleGuns(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate),
+                                                                    _gameGrid);
 
                         newTurret.RotationAngle = AnglesHelper.GetAngleToReachTarget(newTurret.Coordinate.GetVector2(),
                                                                                      _startVortex.Coordinate.GetVector2());
