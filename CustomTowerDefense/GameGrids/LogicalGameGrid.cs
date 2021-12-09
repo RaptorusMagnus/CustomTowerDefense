@@ -9,6 +9,11 @@ namespace CustomTowerDefense.GameGrids
     /// </summary>
     public abstract  class LogicalGameGrid
     {
+        private int _minPhysicalX;
+        private int _minPhysicalY;
+        private int _maxPhysicalX;
+        private int _maxPhysicalY;
+        
         /// <summary>
         /// The X size is the number of columns
         /// (do not confuse with max X since we use a zero based matrix) 
@@ -41,6 +46,10 @@ namespace CustomTowerDefense.GameGrids
             TilesSize = tilesSize;
             XOffset = xOffset;
             YOffset = yOffset;
+            _minPhysicalX = 0 + xOffset;
+            _minPhysicalY = 0 + yOffset;
+            _maxPhysicalX = _minPhysicalX + (tilesSize * X_SIZE);
+            _maxPhysicalY = _minPhysicalY + (tilesSize * Y_SIZE);
         }
 
         #endregion
@@ -99,6 +108,14 @@ namespace CustomTowerDefense.GameGrids
         {
             return coordinate.X > MaxX ||
                    coordinate.Y > MaxY;
+        }
+
+        public bool IsOutOfPhysicalGrid(Coordinate coordinate)
+        {
+            return coordinate.X < _minPhysicalX ||
+                   coordinate.X > _maxPhysicalX ||
+                   coordinate.Y < _minPhysicalY ||
+                   coordinate.Y > _maxPhysicalY;
         }
     }
 }

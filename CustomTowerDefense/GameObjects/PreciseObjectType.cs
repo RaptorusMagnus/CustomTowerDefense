@@ -10,6 +10,7 @@
         Vortex,
         SmallScoutShip,
         StructureElement,
-        DoubleGunsDefenseTurret
+        DoubleGunsDefenseTurret,
+        DoubleGunsDefenseTurretFire
     }
 }

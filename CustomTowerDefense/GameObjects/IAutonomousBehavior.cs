@@ -1,4 +1,7 @@
-﻿namespace CustomTowerDefense.GameObjects
+﻿using System;
+using Microsoft.Xna.Framework;
+
+namespace CustomTowerDefense.GameObjects
 {
     /// <summary>
     /// For game objects that have an autonomous behavior that just needs to be triggered,
@@ -11,6 +14,6 @@
         /// Something like "Go on doing what ever you were doing". e.g. moving, firing, following the path,...
         /// This method is supposed to be called in the Update refresh cycle.
         /// </summary>
-        void DoCurrentAction();
+        void DoCurrentAction(GameTime gameTime);
     }
 }

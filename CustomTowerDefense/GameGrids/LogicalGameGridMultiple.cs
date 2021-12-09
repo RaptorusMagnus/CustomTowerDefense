@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CustomTowerDefense.GameGrids.Interfaces;
 using CustomTowerDefense.GameObjects;
+using CustomTowerDefense.GameObjects.Missiles;
 using CustomTowerDefense.Shared;
 using JetBrains.Annotations;
 
@@ -23,7 +24,9 @@ namespace CustomTowerDefense.GameGrids
         // with 64*64 tiles, a [18; 10] grid fits in our 1200 * 720 screen.
         // later we'll have a scrollable large map, but for first version, let's stick to a fixed, hard-coded grid.
         private readonly List<GameObject>[,] _grid;
-
+        private List<Missile> _missiles;
+        
+        
         /// <inheritdoc cref="ILogicalGrid.GameObjects"/>
         public List<GameObject> GameObjects
         {
@@ -41,6 +44,8 @@ namespace CustomTowerDefense.GameGrids
                 return returnedList;
             }
         }
+        
+        public IEnumerable<Missile> Missiles => _missiles;
 
         #region Constructors
 
@@ -48,6 +53,7 @@ namespace CustomTowerDefense.GameGrids
             : base(tilesSize, xOffset, yOffset)
         {
             _grid = new List<GameObject>[X_SIZE, Y_SIZE];
+            _missiles = new List<Missile>();
         }
 
         #endregion
@@ -135,6 +141,16 @@ namespace CustomTowerDefense.GameGrids
             }
             
             return gridSingle;
+        }
+
+        public void AddMissile(Missile theMissileToAdd)
+        {
+            _missiles.Add(theMissileToAdd);
+        }
+
+        public void RemoveMissilesOutOfGrid()
+        {
+            _missiles = _missiles.Where(m => !IsOutOfPhysicalGrid(m.Coordinate)).ToList();
         }
     }
 }

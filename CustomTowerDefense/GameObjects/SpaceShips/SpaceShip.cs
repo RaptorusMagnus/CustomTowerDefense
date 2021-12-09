@@ -65,7 +65,7 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
         /// continue its move along the path, or keep getting out of the vortex, or keep going in the end vortex,...
         /// This method can be called at each update cycle.
         /// </summary>
-        public void DoCurrentAction()
+        public void DoCurrentAction(GameTime gameTime)
         {
             switch (CurrentAction)
             {

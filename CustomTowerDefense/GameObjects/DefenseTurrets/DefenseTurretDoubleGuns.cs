@@ -9,7 +9,8 @@ namespace CustomTowerDefense.GameObjects.DefenseTurrets
         private const int HEIGHT = 64;
         private const int DRAW_ORDER = 10;
         private const ushort SIGHT_RANGE = 256;
-        private const float ROTATION_SPEED = 0.01f; 
+        private const float ROTATION_SPEED = 0.01f;
+        private const ushort FIRING_DELAY = 600;
         
         public const string ImagePathAndName = @"Sprites\turet03_64";
         
@@ -21,6 +22,7 @@ namespace CustomTowerDefense.GameObjects.DefenseTurrets
                    DRAW_ORDER,
                    SIGHT_RANGE,
                    ROTATION_SPEED,
+                   FIRING_DELAY,
                    logicalGameGrid)
         {
         }

@@ -1,0 +1,18 @@
+﻿using CustomTowerDefense.Shared;
+
+namespace CustomTowerDefense.GameObjects.Missiles
+{
+    public class DoubleGunsTurretMissile: Missile
+    {
+        private const int WIDTH = 16;
+        private const int HEIGHT = 6;
+        private const int DRAW_ORDER = 21;
+        private const float SPEED = 8f;
+        public const string ImagePathAndName = @"Sprites\double-gun-orange-fire";
+        
+        public DoubleGunsTurretMissile(Coordinate coordinate)
+            : base(coordinate, WIDTH, HEIGHT, PreciseObjectType.DoubleGunsDefenseTurretFire,  SPEED, DRAW_ORDER)
+        {
+        }
+    }
+}

@@ -4,6 +4,7 @@ using System.Linq;
 using CustomTowerDefense.GameGrids;
 using CustomTowerDefense.GameObjects;
 using CustomTowerDefense.GameObjects.DefenseTurrets;
+using CustomTowerDefense.GameObjects.Missiles;
 using CustomTowerDefense.GameObjects.SpaceShips;
 using CustomTowerDefense.Helpers;
 using CustomTowerDefense.Shared;
@@ -137,6 +138,7 @@ namespace CustomTowerDefense.Screens.BuildPath
                 TexturesByObjectName.Add(nameof(StructureElement), _contentManager.Load<Texture2D>(StructureElement.ImagePathAndName));
                 TexturesByObjectName.Add(nameof(DefenseTurretDoubleGuns), _contentManager.Load<Texture2D>(DefenseTurretDoubleGuns.ImagePathAndName));
                 TexturesByObjectName.Add(nameof(SmallScoutShip), _contentManager.Load<Texture2D>(SmallScoutShip.ImagePathAndName));
+                TexturesByObjectName.Add(nameof(DoubleGunsTurretMissile), _contentManager.Load<Texture2D>(DoubleGunsTurretMissile.ImagePathAndName));
             }
         }
 
@@ -235,9 +237,16 @@ namespace CustomTowerDefense.Screens.BuildPath
                     // we don't care too much about what they do, we must just tell them to keep doing it. 
                     if (currentGameObject is IAutonomousBehavior autonomousBehaviorObject)
                     {
-                        autonomousBehaviorObject.DoCurrentAction();
+                        autonomousBehaviorObject.DoCurrentAction(gameTime);
                     }
                 }
+                
+                foreach (var currentMissile in _gameGrid.Missiles)
+                {
+                    currentMissile.DoCurrentAction(gameTime);
+                }
+
+                _gameGrid.RemoveMissilesOutOfGrid();
                 
                 // When the path or any other element is not of the correct color (the case after an error),
                 // we set it progressively back to white.
@@ -262,19 +271,32 @@ namespace CustomTowerDefense.Screens.BuildPath
 
             var gameObjects = _gameGrid.GameObjects.OrderBy(go => go.DrawOrder);
 
-            foreach (var vortex in gameObjects)
+            foreach (var gameObject in gameObjects)
             {
                 ScreenManager.SpriteBatch.Draw(
-                    TexturesByObjectName[vortex.GetType().Name],
-                    vortex.GetScaledRectangle(vortex.Scale),
+                    TexturesByObjectName[gameObject.GetType().Name],
+                    gameObject.GetScaledRectangle(gameObject.Scale),
                     null,
-                    vortex.ColorEffect,
-                    vortex.RotationAngle,
-                    vortex.RotationOrigin,
+                    gameObject.ColorEffect,
+                    gameObject.RotationAngle,
+                    gameObject.RotationOrigin,
                     SpriteEffects.None,
                     0);
             }
 
+            foreach (var missile in _gameGrid.Missiles)
+            {
+                ScreenManager.SpriteBatch.Draw(
+                    TexturesByObjectName[missile.GetType().Name],
+                    missile.GetScaledRectangle(missile.Scale),
+                    null,
+                    missile.ColorEffect,
+                    missile.RotationAngle,
+                    missile.RotationOrigin,
+                    SpriteEffects.None,
+                    0);
+            }
+            
             DrawInterfaceButtons(_interfaceButtonTypes);
 
             DrawInfoBar();

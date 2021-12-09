@@ -15,7 +15,6 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
         public SmallScoutShip(Coordinate coordinate, List<GridCoordinate> path, LogicalGameGridMultiple logicalGameGrid):
             base(coordinate, WIDTH, HEIGHT, PreciseObjectType.SmallScoutShip, SPEED, DRAW_ORDER, path, logicalGameGrid)
         {
-            
         }
     }
 }
