@@ -63,15 +63,6 @@ namespace CustomTowerDefense.GameObjects.DefenseTurrets
             _firingDelay = firingDelay;
         }
 
-        //
-        //              _.---._    /\\
-        //           ./'       "--`\//
-        //         ./              o \
-        //        /./\  )______   \__ \
-        //       ./  / /\ \   | \ \  \ \
-        //          / /  \ \  | |\ \  \7
-        //           "     "    "  "
-        //
         /// <inheritdoc cref="IAutonomousBehavior.DoCurrentAction"/>
         public void DoCurrentAction(GameTime gameTime)
         {
@@ -118,7 +109,7 @@ namespace CustomTowerDefense.GameObjects.DefenseTurrets
             
             if (_timeSpanSinceLastFiring.TotalMilliseconds >= _firingDelay)
             {
-                var newMissile = new DoubleGunsTurretMissile(Coordinate)
+                var newMissile = new DoubleGunsTurretMissile(Coordinate, _logicalGameGrid)
                 {
                     RotationAngle = RotationAngle,
                     Direction = AnglesHelper.AngleToVector(RotationAngle)

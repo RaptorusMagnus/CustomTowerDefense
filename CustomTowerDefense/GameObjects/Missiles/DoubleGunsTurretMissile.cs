@@ -1,4 +1,5 @@
-﻿using CustomTowerDefense.Shared;
+﻿using CustomTowerDefense.GameGrids;
+using CustomTowerDefense.Shared;
 
 namespace CustomTowerDefense.GameObjects.Missiles
 {
@@ -10,8 +11,8 @@ namespace CustomTowerDefense.GameObjects.Missiles
         private const float SPEED = 8f;
         public const string ImagePathAndName = @"Sprites\double-gun-orange-fire";
         
-        public DoubleGunsTurretMissile(Coordinate coordinate)
-            : base(coordinate, WIDTH, HEIGHT, PreciseObjectType.DoubleGunsDefenseTurretFire,  SPEED, DRAW_ORDER)
+        public DoubleGunsTurretMissile(Coordinate coordinate, LogicalGameGridMultiple gameGrid)
+            : base(coordinate, WIDTH, HEIGHT, PreciseObjectType.DoubleGunsDefenseTurretFire,  SPEED, DRAW_ORDER, gameGrid)
         {
         }
     }

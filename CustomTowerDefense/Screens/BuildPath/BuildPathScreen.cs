@@ -240,14 +240,9 @@ namespace CustomTowerDefense.Screens.BuildPath
                         autonomousBehaviorObject.DoCurrentAction(gameTime);
                     }
                 }
-                
-                foreach (var currentMissile in _gameGrid.Missiles)
-                {
-                    currentMissile.DoCurrentAction(gameTime);
-                }
 
-                _gameGrid.RemoveMissilesOutOfGrid();
-                
+                HandleMissiles(gameTime);
+
                 // When the path or any other element is not of the correct color (the case after an error),
                 // we set it progressively back to white.
                 _pathColor = FaderHelper.GetNextFadeBackToWhiteColor(_pathColor);
@@ -643,6 +638,16 @@ namespace CustomTowerDefense.Screens.BuildPath
             }
 
             _numberOfBlocsAvailable--;
+        }
+
+        private void HandleMissiles(GameTime gameTime)
+        {
+            foreach (var currentMissile in _gameGrid.Missiles)
+            {
+                currentMissile.DoCurrentAction(gameTime);
+            }
+
+            _gameGrid.RemoveMissilesOutOfGrid();
         }
         
         #endregion Private Methods
