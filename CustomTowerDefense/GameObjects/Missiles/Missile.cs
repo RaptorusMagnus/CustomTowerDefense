@@ -15,6 +15,8 @@ namespace CustomTowerDefense.GameObjects.Missiles
         // To code some behaviors we need information concerning the surroundings
         private readonly LogicalGameGridMultiple _logicalGameGrid;
         
+        public bool HasHitTarget { get; private set; }
+        
         protected Missile(
             Coordinate coordinate,
             int width,
@@ -26,6 +28,7 @@ namespace CustomTowerDefense.GameObjects.Missiles
             base(coordinate, width, height, preciseObjectType, speed, drawOrder)
         {
             _logicalGameGrid = gameGrid;
+            HasHitTarget = false;
         }
 
         public void DoCurrentAction(GameTime gameTime)
@@ -59,9 +62,9 @@ namespace CustomTowerDefense.GameObjects.Missiles
                                                         Math.Clamp(spaceship.ColorEffect.G - 10, 0, 255),
                                                         Math.Clamp(spaceship.ColorEffect.B - 10, 0, 255),
                                                         spaceship.ColorEffect.A);
-
+                    
                     // To be destroyed by the screen
-                    Coordinate = new Coordinate(-1, -1);
+                    HasHitTarget = true;
                 }
             }
         }

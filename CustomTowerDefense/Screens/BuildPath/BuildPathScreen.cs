@@ -221,33 +221,37 @@ namespace CustomTowerDefense.Screens.BuildPath
             // Gradually fade in or out depending on whether we are covered by the pause screen.
             _pauseAlpha = coveredByOtherScreen ? Math.Min(_pauseAlpha + 1f / 32, 1) : Math.Max(_pauseAlpha - 1f / 32, 0);
 
-            if (IsActive)
+            if (!IsActive)
             {
-                // Vortexes must turn
-                _startVortex.RotationAngle -= VORTEX_ROTATION_SPEED;
-                _endVortex.RotationAngle += VORTEX_ROTATION_SPEED;
-
-                PumpSpaceShipOutOfVortex();
-                PushSpaceShipInTheEndVortex();
-                
-                foreach (var currentGameObject in _gameGrid.GameObjects)
-                {
-                    // Spaceships, turrets and other objects can do some actions,
-                    // that could possibly require several cycles to accomplish.
-                    // we don't care too much about what they do, we must just tell them to keep doing it. 
-                    if (currentGameObject is IAutonomousBehavior autonomousBehaviorObject)
-                    {
-                        autonomousBehaviorObject.DoCurrentAction(gameTime);
-                    }
-                }
-
-                HandleMissiles(gameTime);
-
-                // When the path or any other element is not of the correct color (the case after an error),
-                // we set it progressively back to white.
-                _pathColor = FaderHelper.GetNextFadeBackToWhiteColor(_pathColor);
-                _numberOfElementsInfoColor = FaderHelper.GetNextFadeBackToWhiteColor(_numberOfElementsInfoColor);
+                return;
             }
+
+            HandleCollidedMissiles();
+            
+            // Vortexes must turn
+            _startVortex.RotationAngle -= VORTEX_ROTATION_SPEED;
+            _endVortex.RotationAngle += VORTEX_ROTATION_SPEED;
+
+            PumpSpaceShipOutOfVortex();
+            PushSpaceShipInTheEndVortex();
+                
+            foreach (var currentGameObject in _gameGrid.GameObjects)
+            {
+                // Spaceships, turrets and other objects can do some actions,
+                // that could possibly require several cycles to accomplish.
+                // we don't care too much about what they do, we must just tell them to keep doing it. 
+                if (currentGameObject is IAutonomousBehavior autonomousBehaviorObject)
+                {
+                    autonomousBehaviorObject.DoCurrentAction(gameTime);
+                }
+            }
+
+            HandleMissilesMovements(gameTime);
+
+            // When the path or any other element is not of the correct color (the case after an error),
+            // we set it progressively back to white.
+            _pathColor = FaderHelper.GetNextFadeBackToWhiteColor(_pathColor);
+            _numberOfElementsInfoColor = FaderHelper.GetNextFadeBackToWhiteColor(_numberOfElementsInfoColor);
         }
 
         public override void Draw(GameTime gameTime)
@@ -310,7 +314,7 @@ namespace CustomTowerDefense.Screens.BuildPath
         #endregion  Update and draw
         
         #region Private Methods
-
+        
         private BuildPathActionButtonType? GetActionButtonClicked(Coordinate coordinate)
         {
             if (coordinate.X >= TowerDefenseGame.ASPECT_RATIO_WIDTH - _gameGrid.TilesSize)
@@ -640,7 +644,16 @@ namespace CustomTowerDefense.Screens.BuildPath
             _numberOfBlocsAvailable--;
         }
 
-        private void HandleMissiles(GameTime gameTime)
+        private void HandleCollidedMissiles()
+        {
+            _gameGrid.RemoveCollidedMissiles();
+        }
+        
+        /// <summary>
+        /// Makes sure that missiles are progressing, and that out of scope missiles are removed.
+        /// </summary>
+        /// <param name="gameTime"></param>
+        private void HandleMissilesMovements(GameTime gameTime)
         {
             foreach (var currentMissile in _gameGrid.Missiles)
             {

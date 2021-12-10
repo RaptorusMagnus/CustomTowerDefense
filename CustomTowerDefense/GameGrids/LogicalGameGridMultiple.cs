@@ -152,5 +152,10 @@ namespace CustomTowerDefense.GameGrids
         {
             _missiles = _missiles.Where(m => !IsOutOfPhysicalGrid(m.Coordinate)).ToList();
         }
+
+        public void RemoveCollidedMissiles()
+        {
+            _missiles = _missiles.Where(m => !m.HasHitTarget).ToList();
+        }
     }
 }
