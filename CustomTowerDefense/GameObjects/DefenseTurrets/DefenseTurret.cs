@@ -83,31 +83,38 @@ namespace CustomTowerDefense.GameObjects.DefenseTurrets
             
             // From all the enemies in sight, we must focus on the one that is further than the others,
             // to avoid its escape in the end vortex (Note that when they are in the vortex, it's too late)
-            var target = inSight.Where(s => s.CurrentAction != SpaceshipAction.GoingInVortex)
-                                .OrderByDescending(s => ((SpaceShip) s).CurrentPathIndex).First();
+            var target = inSight.Where(s => s.CurrentAction == SpaceshipAction.MoveToNextPathLocation)
+                                .OrderByDescending(s => s.CurrentPathIndex).FirstOrDefault();
 
+            if (target == null)
+                return;
+
+            // Must the turret turn to reach the target?
             var angleToReachTarget = AnglesHelper.GetAngleToReachTarget(GetCurrentCoordinateAsVector(), target.GetCurrentCoordinateAsVector());
             var rotationDifference = Math.Abs(RotationAngle - angleToReachTarget);
 
             if (rotationDifference <= RotationSpeed)
             {
                 RotationAngle = angleToReachTarget;
+                rotationDifference = 0;
             }
             else
             {
-                if (RotationAngle > angleToReachTarget)
-                {
-                    RotationAngle -= RotationSpeed;
-                }
-                else
-                {
-                    RotationAngle += RotationSpeed;
-                }
+                RotationAngle += AnglesHelper.GetShortestRotationDirection(RotationAngle, angleToReachTarget) * RotationSpeed;
+                rotationDifference = Math.Abs(RotationAngle - angleToReachTarget);
             }
             
+            // Can we fire again?
             _timeSpanSinceLastFiring = _timeSpanSinceLastFiring.Add(gameTime.ElapsedGameTime);
+
+            if (_timeSpanSinceLastFiring.TotalMilliseconds <= _firingDelay)
+                return;
             
-            if (_timeSpanSinceLastFiring.TotalMilliseconds >= _firingDelay)
+            // TODO: the value must depend on the sight range a high sight range must have a lower value because at long range a small angle means a large distance.
+            // The turret operator will shoot even if the cannons are not right in front of the spaceship center.
+            const float perfectCenterShootTolerance = 0.2f;
+            
+            if (rotationDifference <= perfectCenterShootTolerance)
             {
                 var newMissile = new DoubleGunsTurretMissile(Coordinate, _logicalGameGrid)
                 {
@@ -121,9 +128,11 @@ namespace CustomTowerDefense.GameObjects.DefenseTurrets
                 
                 _logicalGameGrid.AddMissile(newMissile);
                 
-                // TODO: Fire if the enemy is in front or nearly in front (Tolerance angle to be determined)
-                
                 _timeSpanSinceLastFiring = TimeSpan.Zero;
+            }
+            else
+            {
+                Console.WriteLine($"Not shooting because angle: {RotationAngle - angleToReachTarget}");
             }
         }
     }

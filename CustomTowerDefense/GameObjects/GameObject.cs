@@ -1,4 +1,5 @@
-﻿using CustomTowerDefense.Shared;
+﻿using CustomTowerDefense.Helpers;
+using CustomTowerDefense.Shared;
 using Microsoft.Xna.Framework;
 
 namespace CustomTowerDefense.GameObjects
@@ -15,6 +16,7 @@ namespace CustomTowerDefense.GameObjects
     {
         #region Private fields
 
+        private float _rotationAngle;
         private Coordinate _coordinate;
         
         private int RotationPointDistanceX => Width / 2;
@@ -33,7 +35,11 @@ namespace CustomTowerDefense.GameObjects
 
         public PreciseObjectType PreciseObjectType { get; }
 
-        public float RotationAngle { get; set; }
+        public float RotationAngle
+        {
+            get => _rotationAngle;
+            set => _rotationAngle = AnglesHelper.NormalizeRadians2Pi(value);
+        }
         
         public virtual Coordinate Coordinate
         {
