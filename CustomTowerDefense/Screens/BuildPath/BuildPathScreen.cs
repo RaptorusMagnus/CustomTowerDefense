@@ -22,7 +22,7 @@ namespace CustomTowerDefense.Screens.BuildPath
 
         // This is the scale increment for ships going out of the vortex.
         // A higher value will make ships ready to go out faster.
-        private const float PUMP_OUT_OF_VORTEX_SPEED = 0.005f;
+        private const float PUMP_OUT_OF_VORTEX_SPEED = 0.009f;
         
         // For animation purpose only
         private const float VORTEX_ROTATION_SPEED = 0.01f;
@@ -402,6 +402,17 @@ namespace CustomTowerDefense.Screens.BuildPath
                     currentButton.RotationOrigin,
                     SpriteEffects.None,
                     0f);
+
+                if (currentButtonObjectType == typeof(StructureElement) )
+                {
+                    var font = ScreenManager.Font;
+                    var availableStructureElementsText = $"{_numberOfBlocsAvailable}";
+                    var textSize = font.MeasureString(availableStructureElementsText);
+                    var buttonCenter = currentButton.GetCurrentCoordinateAsVector();
+                    var textPosition = new Vector2(buttonCenter.X - textSize.X/2, buttonCenter.Y - textSize.Y/2);
+            
+                    ScreenManager.SpriteBatch.DrawString(font, availableStructureElementsText, textPosition, _numberOfElementsInfoColor);
+                }
                 
                 currentOffsetY += _gameGrid.TilesSize;
             }
@@ -412,11 +423,11 @@ namespace CustomTowerDefense.Screens.BuildPath
             var font = ScreenManager.Font;
             var viewport = ScreenManager.GraphicsDevice.Viewport;
             var bottomLeftCorner = new Vector2(0, viewport.Height);
-            var availableStructureElementsText = $"Structure elements: {_numberOfBlocsAvailable}";
+            var availableStructureElementsText = $"Nbr objects: {_gameGrid.GameObjects.Count}   Nbr missiles: {_gameGrid.Missiles.Count()}";
             var textSize = font.MeasureString(availableStructureElementsText);
             var textPosition = bottomLeftCorner - new Vector2(0, textSize.Y);
             
-            ScreenManager.SpriteBatch.DrawString(font, availableStructureElementsText, textPosition, _numberOfElementsInfoColor);
+            ScreenManager.SpriteBatch.DrawString(font, availableStructureElementsText, textPosition, Color.White);
         }
         
         private List<GridCoordinate> RecomputeShortestPath()
