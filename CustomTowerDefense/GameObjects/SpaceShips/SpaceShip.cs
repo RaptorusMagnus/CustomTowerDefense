@@ -133,8 +133,10 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
 
             // We must know many cycles we have before reaching the target, to compute the best trajectory. 
             var numberOfCyclesToReachTarget = distanceToTarget / Speed;
+
+            const float tooSmallAngleToWaitNextCycle = 0.05f;
             
-            if (Math.Abs(rotationDifference) < 0.1f || numberOfCyclesToReachTarget <= 1)
+            if (Math.Abs(rotationDifference) < tooSmallAngleToWaitNextCycle || numberOfCyclesToReachTarget <= 1)
             {
                 // we don't spread the rotation on next moves when the difference is so small that we would not see the difference.
                 // Or, when it's the last move to reach the target (we won't have another cycle to do so)
@@ -144,15 +146,9 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
             {
                 // several cycles will be necessary, and the angle is significant let's make a progressive turn
                 var rotationIncrementPerStep = AnglesHelper.GetRotationIncrementPerStep(rotationDifference, numberOfCyclesToReachTarget);
-
-                if (RotationAngle > angleToReachTarget)
-                {
-                    RotationAngle -= rotationIncrementPerStep;
-                }
-                else
-                {
-                    RotationAngle += rotationIncrementPerStep;
-                }
+                var rotationDirection = AnglesHelper.GetShortestRotationDirection(RotationAngle, angleToReachTarget);
+                
+                RotationAngle += rotationDirection * rotationIncrementPerStep;
             }
 
             // Now that the angle is correct, lets move in that direction!
@@ -161,7 +157,7 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
             
             // Note that we trigger trajectory transition before actually reaching the precise center of next path coordinate,
             // because we need to start turning before reaching the center, to avoid very steep/weird rotations.
-            // 0.63 is an empirical number. After several tests, it gives nice results.
+            // the value below is an empirical number. After several tests, it gives nice results.
             // A higher value gives a smooth trajectory with large curves. A lower value keeps the spaceship more strictly on the path.
             // /!\ don't mess to much with it because a wrong value can lead to some weird trajectories,
             // and even bugs when the spaceships miss their target due to a bad trajectory.

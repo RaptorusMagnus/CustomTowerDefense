@@ -40,8 +40,11 @@ namespace CustomTowerDefense.Helpers
         {
             var targetVsOriginVector = targetCoordinate - origin;
             var baseZeroDegreeVector = new Point(0, -1); // 12 o'clock == 0°, assuming that y goes from top to bottom (the case in XNA framework)
-            
-            return (float) (Math.Atan2(targetVsOriginVector.Y, targetVsOriginVector.X) - Math.Atan2(baseZeroDegreeVector.Y, baseZeroDegreeVector.X));
+
+            var rawAngle = (float) (Math.Atan2(targetVsOriginVector.Y, targetVsOriginVector.X) -
+                                    Math.Atan2(baseZeroDegreeVector.Y, baseZeroDegreeVector.X));
+
+            return NormalizeRadians2Pi(rawAngle);
         }
         
         
@@ -75,7 +78,7 @@ namespace CustomTowerDefense.Helpers
             rotationIncrementPerStep += (rotationIncrementPerStep * (float) (rotationAccelerator * Math.Sin(Math.Abs(rotationDifference))));
 
             // In all cases we don't want a rotation increment too small, otherwise we ship is going too far to the sides.
-            return Math.Clamp(rotationIncrementPerStep, 0.01f, 10f);
+            return Math.Clamp(rotationIncrementPerStep, 0.01f, TwoPI);
         }
 
         /// <summary>
