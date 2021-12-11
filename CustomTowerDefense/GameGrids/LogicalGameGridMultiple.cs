@@ -85,7 +85,17 @@ namespace CustomTowerDefense.GameGrids
             _grid[coordinate.X, coordinate.Y] ??= new List<GameObject>();
             _grid[coordinate.X, coordinate.Y].Add(theObjectToAdd);
         }
-        
+
+        public void RemoveObjectAt([NotNull] GameObject theObjectToRemove, Coordinate coordinate)
+        {
+            var gridCoordinate = GetLogicalCoordinateFromPixelCoordinate(coordinate);
+            
+            if (gridCoordinate == null)
+                throw new Exception($"Coordinate {coordinate} does not match any game grid location. Impossible to remove the game object."); 
+                
+            RemoveObjectAt(theObjectToRemove, gridCoordinate.Value);
+        }
+
         public void RemoveObjectAt([NotNull] GameObject theObjectToRemove, GridCoordinate coordinate)
         {
             if (IsOutOfGrid(coordinate))

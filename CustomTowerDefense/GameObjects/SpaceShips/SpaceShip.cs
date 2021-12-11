@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using CustomTowerDefense.GameGrids;
+using CustomTowerDefense.GameObjects.Missiles;
 using CustomTowerDefense.Helpers;
 using CustomTowerDefense.Shared;
 using Microsoft.Xna.Framework;
@@ -24,6 +24,8 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
         #region Protected members
 
         public ushort HitPoints { get; private set; }
+        
+        public ushort ArmorLevel { get; private set; }
         
         /// <summary>
         /// All spaceships must follow a known path (no free move),
@@ -51,6 +53,7 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
             float speed,
             int drawOrder,
             ushort hitPoints,
+            ushort armorLevel,
             List<GridCoordinate> path,
             LogicalGameGridMultiple logicalGameGrid)
             : base(coordinate, width, height, preciseObjectType, speed, drawOrder)
@@ -60,6 +63,7 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
             _logicalGameGrid = logicalGameGrid;
             CurrentAction = SpaceshipAction.GoingOutOfVortex;
             HitPoints = hitPoints;
+            ArmorLevel = armorLevel;
         }
 
         #endregion
@@ -73,9 +77,14 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
         {
             switch (CurrentAction)
             {
+                case SpaceshipAction.ToBeRemovedFromGame:
+                    return;
                 case SpaceshipAction.GoingOutOfVortex:
                     break;
                 case SpaceshipAction.GoingInVortex:
+                    break;
+                case SpaceshipAction.Exploding:
+                    Explode();
                     break;
                 case SpaceshipAction.MoveToNextPathLocation:
                     FollowPath();
@@ -171,6 +180,39 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
                 // in any case we keep track of the progress on the path.
                 // We must tell the grid that we have just changed our logical coordinate.
                 _logicalGameGrid.MoveObjectLogically(this, Path[CurrentPathIndex - 1], Path[CurrentPathIndex]);
+            }
+        }
+
+        /// <summary>
+        /// Handles the necessary actions on the spaceship when some damages are received.
+        /// </summary>
+        /// <param name="missile"></param>
+        public void ReceiveDamages(Missile missile)
+        {
+            HitPoints = (ushort) Math.Max(HitPoints - missile.DamagePoints, 0);
+
+            if (HitPoints == 0)
+            {
+                CurrentAction = SpaceshipAction.Exploding;
+            }
+            else
+            {
+                ColorEffect = new Color(Math.Clamp(ColorEffect.R + 10, 0, 255),
+                    Math.Clamp(ColorEffect.G - 20, 0, 255),
+                    Math.Clamp(ColorEffect.B - 20, 0, 255),
+                    ColorEffect.A);
+            }
+        }
+
+        public void Explode()
+        {
+            RotationAngle += 0.02f;
+            Scale -= 0.01f;
+            ColorEffect = Color.Red;
+
+            if (Scale <= 0.01f)
+            {
+                CurrentAction = SpaceshipAction.ToBeRemovedFromGame;
             }
         }
     }

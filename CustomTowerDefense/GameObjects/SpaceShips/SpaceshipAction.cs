@@ -7,6 +7,17 @@
     {
         GoingOutOfVortex,
         GoingInVortex,
-        MoveToNextPathLocation
+        MoveToNextPathLocation,
+        
+        /// <summary>
+        /// when hit points have reached zero
+        /// </summary>
+        Exploding,
+        
+        /// <summary>
+        /// when hit points have reached zero,
+        /// and when the explosion animation is finished
+        /// </summary>
+        ToBeRemovedFromGame
     }
 }

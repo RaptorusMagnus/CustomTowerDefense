@@ -227,6 +227,7 @@ namespace CustomTowerDefense.Screens.BuildPath
             }
 
             HandleCollidedMissiles();
+            RemoveDeadSpaceShips();
             
             // Vortexes must turn
             _startVortex.RotationAngle -= VORTEX_ROTATION_SPEED;
@@ -655,32 +656,29 @@ namespace CustomTowerDefense.Screens.BuildPath
         /// </summary>
         private void HandleCollidedMissiles()
         {
-            //
-            //         \`-"'"-'/
-            //          } 6 6 {
-            //         =.  Y  ,=
-            //           /^^^\  .
-            //          /     \  )
-            //         (  )-(  )/
-            //          ""   ""  
-            //
-            // TODO: Spaceships should have hit points
-            
-            
             foreach (var currentMissile in _gameGrid.Missiles)
             {
                 if (currentMissile.HitSpaceShip == null)
                     continue;
                 
                 var spaceship = currentMissile.HitSpaceShip;
-                    
-                spaceship.ColorEffect = new Color(Math.Clamp(spaceship.ColorEffect.R + 10, 0, 255),
-                    Math.Clamp(spaceship.ColorEffect.G - 20, 0, 255),
-                    Math.Clamp(spaceship.ColorEffect.B - 20, 0, 255),
-                    spaceship.ColorEffect.A);
+
+                spaceship.ReceiveDamages(currentMissile);
             }
             
             _gameGrid.RemoveCollidedMissiles();
+        }
+
+        private void RemoveDeadSpaceShips()
+        {
+            foreach (var gameObject in _gameGrid.GameObjects)
+            {
+                if (gameObject is SpaceShip spaceShip &&
+                    spaceShip.CurrentAction == SpaceshipAction.ToBeRemovedFromGame)
+                {
+                    _gameGrid.RemoveObjectAt(spaceShip, spaceShip.Coordinate);
+                };
+            }
         }
         
         /// <summary>

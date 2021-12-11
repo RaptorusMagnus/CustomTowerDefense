@@ -21,6 +21,11 @@ namespace CustomTowerDefense.GameObjects.Missiles
         [CanBeNull]
         public SpaceShip HitSpaceShip { get; private set; } 
         
+        /// <summary>
+        /// Number of hit points removed from the target after collision.
+        /// Note that this figure may be lessen or upped at the end, when some special rules apply. 
+        /// </summary>
+        public ushort DamagePoints { get; private set; } 
         
         protected Missile(
             Coordinate coordinate,
@@ -29,10 +34,12 @@ namespace CustomTowerDefense.GameObjects.Missiles
             PreciseObjectType preciseObjectType,
             float speed,
             int drawOrder,
+            ushort damagePoints,
             LogicalGameGridMultiple gameGrid) :
             base(coordinate, width, height, preciseObjectType, speed, drawOrder)
         {
             _logicalGameGrid = gameGrid;
+            DamagePoints = damagePoints;
         }
 
         public void DoCurrentAction(GameTime gameTime)
