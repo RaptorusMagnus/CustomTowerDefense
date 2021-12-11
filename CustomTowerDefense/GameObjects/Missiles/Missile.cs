@@ -46,8 +46,10 @@ namespace CustomTowerDefense.GameObjects.Missiles
         {
             Move(Direction * Speed);
 
-            // Let's do some collision detection with spaceships.
-            var spaceShips = _logicalGameGrid.GameObjects.OfType<SpaceShip>();
+            // Let's do some collision detection with spaceships,
+            // that are still in the game (still flying towards the end vortex).
+            var spaceShips = _logicalGameGrid.GameObjects.OfType<SpaceShip>()
+                                .Where(s => s.CurrentAction == SpaceshipAction.MoveToNextPathLocation);
             
             // Since we could have quite a lot of spaceships, we can restrict the list to those that are not too far
             var closeSpaceships = spaceShips.Where(s => s.Coordinate.X < Coordinate.X + _logicalGameGrid.TilesSize &&
