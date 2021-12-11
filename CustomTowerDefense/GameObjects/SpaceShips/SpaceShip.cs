@@ -23,6 +23,8 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
         
         #region Protected members
 
+        public ushort HitPoints { get; private set; }
+        
         /// <summary>
         /// All spaceships must follow a known path (no free move),
         /// this this the specificity of tower defense games.
@@ -48,6 +50,7 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
             PreciseObjectType preciseObjectType,
             float speed,
             int drawOrder,
+            ushort hitPoints,
             List<GridCoordinate> path,
             LogicalGameGridMultiple logicalGameGrid)
             : base(coordinate, width, height, preciseObjectType, speed, drawOrder)
@@ -56,6 +59,7 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
             CurrentPathIndex = 0;
             _logicalGameGrid = logicalGameGrid;
             CurrentAction = SpaceshipAction.GoingOutOfVortex;
+            HitPoints = hitPoints;
         }
 
         #endregion

@@ -3,6 +3,7 @@ using System.Linq;
 using CustomTowerDefense.GameGrids;
 using CustomTowerDefense.GameObjects.SpaceShips;
 using CustomTowerDefense.Shared;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 
 namespace CustomTowerDefense.GameObjects.Missiles
@@ -14,8 +15,12 @@ namespace CustomTowerDefense.GameObjects.Missiles
     {
         // To code some behaviors we need information concerning the surroundings
         private readonly LogicalGameGridMultiple _logicalGameGrid;
+
+        public bool HasHitTarget => HitSpaceShip != null;
         
-        public bool HasHitTarget { get; private set; }
+        [CanBeNull]
+        public SpaceShip HitSpaceShip { get; private set; } 
+        
         
         protected Missile(
             Coordinate coordinate,
@@ -28,7 +33,6 @@ namespace CustomTowerDefense.GameObjects.Missiles
             base(coordinate, width, height, preciseObjectType, speed, drawOrder)
         {
             _logicalGameGrid = gameGrid;
-            HasHitTarget = false;
         }
 
         public void DoCurrentAction(GameTime gameTime)
@@ -48,23 +52,8 @@ namespace CustomTowerDefense.GameObjects.Missiles
             {
                 if (spaceship.BoundaryRect.Intersects(BoundaryRect))
                 {
-                    //
-                    //         \`-"'"-'/
-                    //          } 6 6 {
-                    //         =.  Y  ,=
-                    //           /^^^\  .
-                    //          /     \  )
-                    //         (  )-(  )/
-                    //          ""   ""  
-                    //
-                    // TODO: This is just a test, the missile must not kow what to do with the target, but must only notify the screen that a collision occurred
-                    spaceship.ColorEffect = new Color(Math.Clamp(spaceship.ColorEffect.R + 10, 0, 255),
-                                                        Math.Clamp(spaceship.ColorEffect.G - 10, 0, 255),
-                                                        Math.Clamp(spaceship.ColorEffect.B - 10, 0, 255),
-                                                        spaceship.ColorEffect.A);
-                    
                     // To be destroyed by the screen
-                    HasHitTarget = true;
+                    HitSpaceShip = spaceship;
                 }
             }
         }

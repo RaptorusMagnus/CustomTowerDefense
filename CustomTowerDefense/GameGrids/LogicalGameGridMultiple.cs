@@ -18,6 +18,9 @@ namespace CustomTowerDefense.GameGrids
     ///
     /// Note that in the game we could have several ships on one location (when they overtake each others for instance),
     /// but this is a transitional special case. For structure elements we'll manage only one element per location.
+    ///
+    /// Note as well that the grid must not implement any business rules:
+    /// it must only store the game objects and keep the consistency of the grid state. 
     /// </summary>
     public class LogicalGameGridMultiple: LogicalGameGrid, ILogicalGrid
     {

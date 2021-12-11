@@ -475,6 +475,12 @@ namespace CustomTowerDefense.Screens.BuildPath
             // The start vortex is turning backward (so the increment is negative so we add value)
             var initialAngle = targetAngle + (VORTEX_ROTATION_SPEED * numberOfSteps);
             
+            //            __
+            //   \ ______/ V`-,
+            //    }        /~~
+            //   /_)^ --,r'
+            //  |b      |b
+            //
             // TODO: take the spaceship from a given list (based on the level), and not that hard-coded value.
             var newSpaceShip = new SmallScoutShip(
                 _gameGrid.GetPixelCenterFromLogicalCoordinate(_startVortexLogicalCoordinate),
@@ -644,8 +650,36 @@ namespace CustomTowerDefense.Screens.BuildPath
             _numberOfBlocsAvailable--;
         }
 
+        /// <summary>
+        /// Handles the necessary tasks linked to missiles and spaceships collisions.
+        /// </summary>
         private void HandleCollidedMissiles()
         {
+            //
+            //         \`-"'"-'/
+            //          } 6 6 {
+            //         =.  Y  ,=
+            //           /^^^\  .
+            //          /     \  )
+            //         (  )-(  )/
+            //          ""   ""  
+            //
+            // TODO: Spaceships should have hit points
+            
+            
+            foreach (var currentMissile in _gameGrid.Missiles)
+            {
+                if (currentMissile.HitSpaceShip == null)
+                    continue;
+                
+                var spaceship = currentMissile.HitSpaceShip;
+                    
+                spaceship.ColorEffect = new Color(Math.Clamp(spaceship.ColorEffect.R + 10, 0, 255),
+                    Math.Clamp(spaceship.ColorEffect.G - 20, 0, 255),
+                    Math.Clamp(spaceship.ColorEffect.B - 20, 0, 255),
+                    spaceship.ColorEffect.A);
+            }
+            
             _gameGrid.RemoveCollidedMissiles();
         }
         
