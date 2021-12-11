@@ -1,6 +1,8 @@
 # CustomTowerDefense
 A tower defense game (**Currently under construction**) built with the famous MonoGame framework.
 
+![Screenshot 11-Dec-2021](Screenshots/Capture_2021_12_11.PNG?raw=true "Screenshot 11-Dec-2021")
+
 Like many people, I decided to learn the MonoGame framework by designing a game of my own.
 So here is "yet another" learning project.
 However, since I had quite some experience in standard business C# coding, I headed for a not so simple first try, and I tried to build a nice evolutive architecture.
