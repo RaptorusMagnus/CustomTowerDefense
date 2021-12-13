@@ -34,6 +34,8 @@ namespace CustomTowerDefense.Screens.BuildPath
         #region Private Fields
 
         private ushort _numberOfBlocsAvailable;
+
+        private uint _playerMoney;
         
         private BuildPathActionButtonType? _currentActiveActionButton;
         
@@ -113,6 +115,14 @@ namespace CustomTowerDefense.Screens.BuildPath
             //  
             // TODO: This hard-coded value is just a test, it will later be function of the level and game rules
             _numberOfBlocsAvailable = 18;
+
+            //
+            //   _o)
+            //    /_///
+            //   (____>
+            //
+            // TODO: This hard-coded value is just a test, it will later be function of the level and game rules
+            _playerMoney = 500;
 
             SpawnNextSpaceShip();
         }
@@ -423,7 +433,7 @@ namespace CustomTowerDefense.Screens.BuildPath
             var font = ScreenManager.Font;
             var viewport = ScreenManager.GraphicsDevice.Viewport;
             var bottomLeftCorner = new Vector2(0, viewport.Height);
-            var availableStructureElementsText = $"Nbr objects: {_gameGrid.GameObjects.Count}   Nbr missiles: {_gameGrid.Missiles.Count()}";
+            var availableStructureElementsText = $"Nbr objects: {_gameGrid.GameObjects.Count}   Nbr missiles: {_gameGrid.Missiles.Count()}    $ {_playerMoney}";
             var textSize = font.MeasureString(availableStructureElementsText);
             var textPosition = bottomLeftCorner - new Vector2(0, textSize.Y);
             
@@ -602,13 +612,27 @@ namespace CustomTowerDefense.Screens.BuildPath
 
                     break;
                 }
+                //    _     _
+                //    \`\ /`/
+                //     \ V /
+                //     /. .\
+                //    =\ T /=
+                //     / ^ \
+                //    /\\ //\
+                //  __\ " " /__
+                // (____/^\____)
+                //
+                // TODO: make a method out of this "case" 
                 case BuildPathActionButtonType.DoubleGunsTurret when !_gameGrid.IsEmptyAt(logicalCoordinate):
                     if (gameObjects?.Count > 1)
                     {
                         // It must be possible to remove an existing turret
-                        if (gameObjects[1].GetType() == typeof(DefenseTurretDoubleGuns))
+                        if (gameObjects[1] is DefenseTurretDoubleGuns doubleGunsTurret)
                         {
                             _gameGrid.RemoveObjectAt(gameObjects[1], logicalCoordinate);
+                            
+                            // We cash back
+                            _playerMoney += doubleGunsTurret.CashBackPrice;
                         }
                         
                         // We cannot do anything when there are several objects already in the cell.
@@ -618,14 +642,19 @@ namespace CustomTowerDefense.Screens.BuildPath
                     
                     if (gameObjects?.First() is StructureElement)
                     {
-                        // there is a structure element, we can build a turret on it
-                        var newTurret = new DefenseTurretDoubleGuns(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate),
-                                                                    _gameGrid);
+                        // there is a structure element, we can build a turret on it (if we have enough money)
+                        if (_playerMoney < DefenseTurretDoubleGuns.SalePrice)
+                            break;
 
+                        var newTurret = new DefenseTurretDoubleGuns(_gameGrid.GetPixelCenterFromLogicalCoordinate(logicalCoordinate),
+                            _gameGrid);
+                        
                         newTurret.RotationAngle = AnglesHelper.GetAngleToReachTarget(newTurret.Coordinate.GetVector2(),
                                                                                      _startVortex.Coordinate.GetVector2());
                         
                         _gameGrid.AddGameObject(newTurret, logicalCoordinate);
+
+                        _playerMoney -= DefenseTurretDoubleGuns.SalePrice;
                     }
                     break;
             }

@@ -32,7 +32,14 @@ namespace CustomTowerDefense.GameObjects.DefenseTurrets
         /// Max rotation angle increment that can be added in a single update cycle
         /// </summary>
         public float RotationSpeed { get; }
-        
+
+        /// <summary>
+        /// Amount of money cashed back when the user sells his/her turret.
+        /// We don't use a public constant, because the price of a given turret object may vary through time.
+        /// An already used, second-hand turret will see its cash back price lower through time. 
+        /// </summary>
+        public ushort CashBackPrice { get; }
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -44,6 +51,7 @@ namespace CustomTowerDefense.GameObjects.DefenseTurrets
         /// <param name="sightRange"></param>
         /// <param name="rotationSpeed"></param>
         /// <param name="firingDelay">Number of milliseconds.</param>
+        /// <param name="cashBackPrice"></param>
         /// <param name="logicalGameGrid"></param>
         public DefenseTurret(
             Coordinate coordinate,
@@ -54,6 +62,7 @@ namespace CustomTowerDefense.GameObjects.DefenseTurrets
             ushort sightRange,
             float rotationSpeed,
             ushort firingDelay,
+            ushort cashBackPrice,
             LogicalGameGridMultiple logicalGameGrid)
             : base(coordinate, width, height, preciseObjectType, drawOrder)
         {
@@ -61,6 +70,7 @@ namespace CustomTowerDefense.GameObjects.DefenseTurrets
             RotationSpeed = rotationSpeed;
             _logicalGameGrid = logicalGameGrid;
             _firingDelay = firingDelay;
+            CashBackPrice = cashBackPrice;
         }
 
         /// <inheritdoc cref="IAutonomousBehavior.DoCurrentAction"/>
@@ -110,6 +120,15 @@ namespace CustomTowerDefense.GameObjects.DefenseTurrets
             if (_timeSpanSinceLastFiring.TotalMilliseconds <= _firingDelay)
                 return;
             
+            // 
+            //               _(\
+            //      _____   /_ .|
+            // >==.'_____' /  \_|
+            //   /__________\/
+            //   |_ _____  __|
+            //  /  \______/  \
+            //  \__/      \__/
+            //
             // TODO: the value must depend on the sight range a high sight range must have a lower value because at long range a small angle means a large distance.
             // The turret operator will shoot even if the cannons are not right in front of the spaceship center.
             const float perfectCenterShootTolerance = 0.2f;
