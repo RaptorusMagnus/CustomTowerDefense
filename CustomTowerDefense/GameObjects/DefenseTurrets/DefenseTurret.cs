@@ -149,10 +149,6 @@ namespace CustomTowerDefense.GameObjects.DefenseTurrets
                 
                 _timeSpanSinceLastFiring = TimeSpan.Zero;
             }
-            else
-            {
-                Console.WriteLine($"Not shooting because angle: {RotationAngle - angleToReachTarget}");
-            }
         }
     }
 }

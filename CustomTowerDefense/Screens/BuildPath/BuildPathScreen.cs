@@ -20,18 +20,27 @@ namespace CustomTowerDefense.Screens.BuildPath
     {
         #region Constants
 
-        // This is the scale increment for ships going out of the vortex.
-        // A higher value will make ships ready to go out faster.
-        private const float PUMP_OUT_OF_VORTEX_SPEED = 0.009f;
-        
-        // For animation purpose only
-        private const float VORTEX_ROTATION_SPEED = 0.01f;
+        /// <summary>
+        /// The vortex speed is the key factor to determine how fast spaceships are going out of the vortex,
+        /// but the rotation speed (angle) is not a particularly good scale increment;
+        /// so we use a multiplier to have a proportional effect but with a nice scale effect.
+        /// Note that a higher value will make ships ready to go out faster.
+        /// </summary>
+        private const float PUMP_OUT_OF_VORTEX_SPEED_MULTIPLIER = 0.6f;
 
         private const float INITIAL_SCALE_IN_START_VORTEX = 0.1f;
 
         #endregion
         
         #region Private Fields
+        
+        /// <summary>
+        /// How fast vortex are turning.
+        /// This will not only impact the vortexes animations, but the spaceships pump as well.
+        /// </summary>
+        private readonly float _vortexRotationSpeed;
+        
+        private readonly float _pumpOutOfVortexSpeed;
 
         private ushort _numberOfBlocsAvailable;
 
@@ -73,6 +82,15 @@ namespace CustomTowerDefense.Screens.BuildPath
 
         public BuildPathScreen()
         {
+            //                   _
+            //                  /_/_      .'''. 
+            //               =O(_)))) ...'     `.
+            //                  \_\              `.    .'''B'zzzzzzzzzzz
+            //  
+            // TODO: must come from the Level or wave parameter
+            _vortexRotationSpeed = 0.01f;
+            _pumpOutOfVortexSpeed =  _vortexRotationSpeed * PUMP_OUT_OF_VORTEX_SPEED_MULTIPLIER;
+                
             _mouseLeftClicked = new InputAction(
                 Array.Empty<Buttons>(), 
                 Array.Empty<Keys>(),
@@ -240,8 +258,8 @@ namespace CustomTowerDefense.Screens.BuildPath
             RemoveDeadSpaceShips();
             
             // Vortexes must turn
-            _startVortex.RotationAngle -= VORTEX_ROTATION_SPEED;
-            _endVortex.RotationAngle += VORTEX_ROTATION_SPEED;
+            _startVortex.RotationAngle -= _vortexRotationSpeed;
+            _endVortex.RotationAngle += _vortexRotationSpeed;
 
             PumpSpaceShipOutOfVortex();
             PushSpaceShipInTheEndVortex();
@@ -492,10 +510,10 @@ namespace CustomTowerDefense.Screens.BuildPath
             
             // now we compute the number of necessary steps to reach that angle depending on the pump speed (scale increment)
             const float initialScale = INITIAL_SCALE_IN_START_VORTEX;
-            var numberOfSteps = (1 - initialScale) / PUMP_OUT_OF_VORTEX_SPEED;
+            var numberOfSteps = (1 - initialScale) / _pumpOutOfVortexSpeed;
             
             // The start vortex is turning backward (so the increment is negative so we add value)
-            var initialAngle = targetAngle + (VORTEX_ROTATION_SPEED * numberOfSteps);
+            var initialAngle = targetAngle + (_vortexRotationSpeed * numberOfSteps);
             
             //            __
             //   \ ______/ V`-,
@@ -534,11 +552,11 @@ namespace CustomTowerDefense.Screens.BuildPath
 
             // We want the ships to turn at vortex speed.
             // Since the start vortex is turning backward, we use a negative increment.
-            objectInTheVortex.RotationAngle -= VORTEX_ROTATION_SPEED;
+            objectInTheVortex.RotationAngle -= _vortexRotationSpeed;
             
             if (objectInTheVortex.Scale < 1)
             {
-                objectInTheVortex.Scale += PUMP_OUT_OF_VORTEX_SPEED;
+                objectInTheVortex.Scale += _pumpOutOfVortexSpeed;
             }
             else
             {
@@ -565,11 +583,11 @@ namespace CustomTowerDefense.Screens.BuildPath
             }
 
             // We want the ships to turn at vortex speed.
-            objectInTheVortex.RotationAngle += VORTEX_ROTATION_SPEED;
+            objectInTheVortex.RotationAngle += _vortexRotationSpeed;
             
             if (objectInTheVortex.Scale > INITIAL_SCALE_IN_START_VORTEX)
             {
-                objectInTheVortex.Scale -= PUMP_OUT_OF_VORTEX_SPEED;
+                objectInTheVortex.Scale -= _pumpOutOfVortexSpeed;
             }
             else
             {
