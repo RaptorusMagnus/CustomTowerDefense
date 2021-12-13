@@ -40,6 +40,11 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
         public ushort CurrentPathIndex { get; private set; }
         
         public SpaceshipAction CurrentAction { get; private set; }
+        
+        /// <summary>
+        /// Amount of money earned by the player when a spaceship of current type is destroyed.
+        /// </summary>
+        public ushort RewardValue { get; }
 
         #endregion
 
@@ -54,6 +59,7 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
             int drawOrder,
             ushort hitPoints,
             ushort armorLevel,
+            ushort rewardValue,
             List<GridCoordinate> path,
             LogicalGameGridMultiple logicalGameGrid)
             : base(coordinate, width, height, preciseObjectType, speed, drawOrder)
@@ -64,6 +70,7 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
             CurrentAction = SpaceshipAction.GoingOutOfVortex;
             HitPoints = hitPoints;
             ArmorLevel = armorLevel;
+            RewardValue = rewardValue;
         }
 
         #endregion

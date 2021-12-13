@@ -12,6 +12,7 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
         private const float SPEED = 1.5f;
         private const ushort HIT_POINTS = 100;
         private const ushort ARMOR_LEVEL = 0;
+        private const ushort REWARD_VALUE = 10;
         public const string ImagePathAndName = @"Sprites\Spaceship_0002_small";
         
         public SmallScoutShip(Coordinate coordinate, List<GridCoordinate> path, LogicalGameGridMultiple logicalGameGrid):
@@ -23,6 +24,7 @@ namespace CustomTowerDefense.GameObjects.SpaceShips
                 DRAW_ORDER,
                 HIT_POINTS,
                 ARMOR_LEVEL,
+                REWARD_VALUE,
                 path,
                 logicalGameGrid)
         {
