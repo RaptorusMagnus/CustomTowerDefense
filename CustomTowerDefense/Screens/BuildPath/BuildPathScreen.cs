@@ -734,10 +734,10 @@ namespace CustomTowerDefense.Screens.BuildPath
                 if (gameObject is SpaceShip spaceShip &&
                     spaceShip.CurrentAction == SpaceshipAction.ToBeRemovedFromGame)
                 {
-                    _gameGrid.RemoveObjectAt(spaceShip, spaceShip.Coordinate);
-                    
                     // The player gets rewards when spaceships are destroyed.
                     _playerMoney += spaceShip.RewardValue;
+                    
+                    _gameGrid.RemoveObjectAt(gameObject, spaceShip.Coordinate);
                 };
             }
         }
