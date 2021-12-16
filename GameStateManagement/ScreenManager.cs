@@ -151,7 +151,7 @@ namespace GameStateManagement
             // the process of updating one screen adds or removes others.
             _tempScreensList.Clear();
 
-            foreach (GameScreen screen in _screens)
+            foreach (var screen in _screens)
                 _tempScreensList.Add(screen);
 
             bool otherScreenHasFocus = !Game.IsActive;
@@ -161,7 +161,7 @@ namespace GameStateManagement
             while (_tempScreensList.Count > 0)
             {
                 // Pop the topmost screen off the waiting list.
-                GameScreen screen = _tempScreensList[_tempScreensList.Count - 1];
+                var screen = _tempScreensList[_tempScreensList.Count - 1];
 
                 _tempScreensList.RemoveAt(_tempScreensList.Count - 1);
 

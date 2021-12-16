@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using CustomTowerDefense.Shared;
 
-namespace CustomTowerDefense.Shared
+namespace CustomTowerDefense.GameEngine
 {
     public class Wave
     {

@@ -141,8 +141,6 @@ namespace CustomTowerDefense.Screens.BuildPath
             //
             // TODO: This hard-coded value is just a test, it will later be function of the level and game rules
             _playerMoney = 500;
-
-            SpawnNextSpaceShip();
         }
         
         #endregion
@@ -261,7 +259,7 @@ namespace CustomTowerDefense.Screens.BuildPath
             _startVortex.RotationAngle -= _vortexRotationSpeed;
             _endVortex.RotationAngle += _vortexRotationSpeed;
 
-            PumpSpaceShipOutOfVortex();
+            PumpSpaceShipOutOfVortex(gameTime);
             PushSpaceShipInTheEndVortex();
                 
             foreach (var currentGameObject in _gameGrid.GameObjects)
@@ -493,18 +491,19 @@ namespace CustomTowerDefense.Screens.BuildPath
         /// <summary>
         /// Spawns a new spaceship at the beginning of the path (the start vortex), when necessary. 
         /// </summary>
-        private void SpawnNextSpaceShip()
+        private void SpawnNextSpaceShip(GameTime gameTime)
         {
             if (_currentActiveActionButton != BuildPathActionButtonType.StartWaveButton)
                 return;
             
-            var objectInTheVortex = _gameGrid.GetContentAt(_startVortexLogicalCoordinate)
-                ?.FirstOrDefault(o => o.PreciseObjectType != PreciseObjectType.Vortex);
-            
             // if an object is already in the vortex we cannot spawn another one
+            var objectInTheVortex = _gameGrid.GetContentAt(_startVortexLogicalCoordinate)
+                                            ?.FirstOrDefault(o => o.PreciseObjectType != PreciseObjectType.Vortex);
+            
             if (objectInTheVortex != null)
                 return;
             
+            // We would like to have the ship right in front of the path when it is ready to go out of the vortex.
             // First we need to know the final rotation angle to reach the first path element
             var targetAngle = AnglesHelper.GetAngleFromTargetSiblingTile(_startVortexLogicalCoordinate, _pathCoordinates[1]);
             
@@ -522,6 +521,7 @@ namespace CustomTowerDefense.Screens.BuildPath
             //  |b      |b
             //
             // TODO: take the spaceship from a given list (based on the level), and not that hard-coded value.
+            
             var newSpaceShip = new SmallScoutShip(
                 _gameGrid.GetPixelCenterFromLogicalCoordinate(_startVortexLogicalCoordinate),
                 _pathCoordinates,
@@ -539,14 +539,14 @@ namespace CustomTowerDefense.Screens.BuildPath
         /// Does the animation of the space ship going out of the vortex.
         /// Which is, scaling up to normal size and turn at same speed than the vortex.
         /// </summary>
-        private void PumpSpaceShipOutOfVortex()
+        private void PumpSpaceShipOutOfVortex(GameTime gameTime)
         {
             var objectInTheVortex = _gameGrid.GetContentAt(_startVortexLogicalCoordinate, false)
                                               ?.FirstOrDefault(o => o.PreciseObjectType != PreciseObjectType.Vortex);
 
             if (objectInTheVortex == null)
             {
-                SpawnNextSpaceShip();
+                SpawnNextSpaceShip(gameTime);
                 return;
             }
 
