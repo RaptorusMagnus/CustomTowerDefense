@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+    To persist data from the game, like user level, score, etc.
+    No particular security is applied for the moment,
+    so a simple edit of this file will impact the game (cheating is easy).
+    We don't care too much for the moment since this game is under construction.
+    
+    In the future, we could make things more secured by using Hash algorithms and inter-dependant checksums on every blocks.
+    Modifying manually a value would break the checksums consistency.
+    We could as well remove the file extension, zip the file etc. to make hackers life a bit harder :-) 
+-->
+<RepositoryData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<Player>
+    <Level>2</Level>
+</Player>
+<Levels>
+    <LevelEntity>
+        <StartVortexCoordinate>
+            <X>0</X>
+            <Y>0</Y>
+        </StartVortexCoordinate>
+        <EndVortexCoordinate>
+            <X>11</X>
+            <Y>6</Y>
+        </EndVortexCoordinate>
+        <Waves>
+            <WaveEntity>
+                <Elements>
+                    <WaveElementEntity>
+                        <RepeatNumber>10</RepeatNumber>
+                        <DelayBeforeCreation>0</DelayBeforeCreation>
+                        <SpaceShipType>SmallScoutShip</SpaceShipType>
+                    </WaveElementEntity>
+                </Elements>
+            </WaveEntity>
+        </Waves>
+    </LevelEntity>
+</Levels>
+</RepositoryData>

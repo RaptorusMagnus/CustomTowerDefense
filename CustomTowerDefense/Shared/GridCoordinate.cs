@@ -1,4 +1,6 @@
-﻿namespace CustomTowerDefense.Shared
+﻿using System;
+
+namespace CustomTowerDefense.Shared
 {
     /// <summary>
     /// Simple immutable integer X-Y coordinate to be used for logical grid locations.
@@ -12,7 +14,7 @@
         public GridCoordinate RightSibling => new ((ushort)(X + 1), Y);
         public GridCoordinate TopSibling => new (X, (ushort)(Y - 1));
         public GridCoordinate BottomSibling => new (X, (ushort)(Y + 1));
-        
+
         public GridCoordinate(ushort x, ushort y)
         {
             X = x;

@@ -1,7 +1,7 @@
-﻿using CustomTowerDefense.GameObjects.SpaceShips;
-using CustomTowerDefense.Shared;
+﻿using CustomTowerDefense.GameEngine;
+using CustomTowerDefense.GameObjects.SpaceShips;
 
-namespace CustomTowerDefense.GameEngine
+namespace CustomTowerDefense.Repository
 {
     /// <summary>
     /// Utility class to load waves and check their content against some business rules.
@@ -12,9 +12,9 @@ namespace CustomTowerDefense.GameEngine
     ///  / \     / \     /o\
     /// TODO: Currently some values and content are hard-coded, but they must ultimately come from a file 
     /// </summary>
-    public class WaveLoader
+    public class WaveRepository: BaseRepository
     {
-        public WaveLoader()
+        public WaveRepository()
         {
             //
             //   ,-~~-.___.
@@ -27,17 +27,6 @@ namespace CustomTowerDefense.GameEngine
             // =(  _____| (_________|
             //
             // TODO: load the file content here
-        }
-        
-        /// <summary>
-        /// Returns the highest level available in the game.
-        /// This method is in the wave loader because the value depends on the editable configuration file.
-        /// So we don't know at design time what will be the highest level.
-        /// </summary>
-        /// <returns></returns>
-        public ushort GetHighestAvailableLevel()
-        {
-            return 1;
         }
 
         /// <summary>

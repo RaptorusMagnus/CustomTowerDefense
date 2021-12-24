@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using CustomTowerDefense.GameEngine;
 using CustomTowerDefense.GameGrids;
 using CustomTowerDefense.GameObjects;
 using CustomTowerDefense.GameObjects.DefenseTurrets;
 using CustomTowerDefense.GameObjects.Missiles;
 using CustomTowerDefense.GameObjects.SpaceShips;
 using CustomTowerDefense.Helpers;
+using CustomTowerDefense.Repository;
 using CustomTowerDefense.Shared;
 using GameStateManagement;
 using Microsoft.Xna.Framework;
@@ -23,10 +25,10 @@ namespace CustomTowerDefense.Screens.BuildPath
         /// <summary>
         /// The vortex speed is the key factor to determine how fast spaceships are going out of the vortex,
         /// but the rotation speed (angle) is not a particularly good scale increment;
-        /// so we use a multiplier to have a proportional effect but with a nice scale effect.
+        /// so we use a multiplier to have a proportional effect, but with a nice scale effect.
         /// Note that a higher value will make ships ready to go out faster.
         /// </summary>
-        private const float PUMP_OUT_OF_VORTEX_SPEED_MULTIPLIER = 0.6f;
+        private const float PUMP_OUT_OF_VORTEX_SPEED_MULTIPLIER = 0.8f;
 
         private const float INITIAL_SCALE_IN_START_VORTEX = 0.1f;
 
@@ -82,6 +84,17 @@ namespace CustomTowerDefense.Screens.BuildPath
 
         public BuildPathScreen()
         {
+            _mouseLeftClicked = new InputAction(
+                Array.Empty<Buttons>(), 
+                Array.Empty<Keys>(),
+                new [] {MouseButton.LeftButton},
+                true);
+                
+            _gameGrid = new LogicalGameGridMultiple(TowerDefenseGame.TILES_SIZE, 0, 0);
+
+            var playerRepository = new PlayerRepository();
+            var player = playerRepository.GetPlayer();
+            
             //                   _
             //                  /_/_      .'''. 
             //               =O(_)))) ...'     `.
@@ -90,14 +103,6 @@ namespace CustomTowerDefense.Screens.BuildPath
             // TODO: must come from the Level or wave parameter
             _vortexRotationSpeed = 0.01f;
             _pumpOutOfVortexSpeed =  _vortexRotationSpeed * PUMP_OUT_OF_VORTEX_SPEED_MULTIPLIER;
-                
-            _mouseLeftClicked = new InputAction(
-                Array.Empty<Buttons>(), 
-                Array.Empty<Keys>(),
-                new [] {MouseButton.LeftButton},
-                true);
-                
-            _gameGrid = new LogicalGameGridMultiple(TowerDefenseGame.TILES_SIZE, 0, 0);
             
             _startVortexLogicalCoordinate = new GridCoordinate(0, 0);
             _startVortex = new Vortex(_gameGrid.GetPixelCenterFromLogicalCoordinate(_startVortexLogicalCoordinate));
@@ -503,17 +508,8 @@ namespace CustomTowerDefense.Screens.BuildPath
             if (objectInTheVortex != null)
                 return;
             
-            // We would like to have the ship right in front of the path when it is ready to go out of the vortex.
-            // First we need to know the final rotation angle to reach the first path element
-            var targetAngle = AnglesHelper.GetAngleFromTargetSiblingTile(_startVortexLogicalCoordinate, _pathCoordinates[1]);
-            
-            // now we compute the number of necessary steps to reach that angle depending on the pump speed (scale increment)
-            const float initialScale = INITIAL_SCALE_IN_START_VORTEX;
-            var numberOfSteps = (1 - initialScale) / _pumpOutOfVortexSpeed;
-            
-            // The start vortex is turning backward (so the increment is negative so we add value)
-            var initialAngle = targetAngle + (_vortexRotationSpeed * numberOfSteps);
-            
+            var initialAngle = GetStartAngleToFacePathAtTheEnd();
+
             //            __
             //   \ ______/ V`-,
             //    }        /~~
@@ -527,12 +523,29 @@ namespace CustomTowerDefense.Screens.BuildPath
                 _pathCoordinates,
                 _gameGrid)
             {
-                Scale = initialScale,
+                Scale = INITIAL_SCALE_IN_START_VORTEX,
                 RotationAngle = initialAngle
             };
 
             // The new space ship must be small, and must turn with the start vortex
             _gameGrid.AddGameObject(newSpaceShip, _startVortexLogicalCoordinate);
+        }
+
+        /// <summary>
+        /// Gets the start rotation angle to have the ship right in front of the path, at the end,
+        /// when it is ready to go out of the vortex.
+        /// </summary>
+        /// <returns></returns>
+        private float GetStartAngleToFacePathAtTheEnd()
+        {
+            // First we need to know the final rotation angle to reach the first path element
+            var targetAngle = AnglesHelper.GetAngleFromTargetSiblingTile(_startVortexLogicalCoordinate, _pathCoordinates[1]);
+
+            // now we compute the number of necessary steps to reach that angle depending on the pump speed (scale increment)
+            var numberOfSteps = (1 - INITIAL_SCALE_IN_START_VORTEX) / _pumpOutOfVortexSpeed;
+
+            // The start vortex is turning backward (so the increment is negative so we add value)
+            return targetAngle + (_vortexRotationSpeed * numberOfSteps);
         }
 
         /// <summary>
