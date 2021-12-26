@@ -9,7 +9,7 @@ namespace CustomTowerDefense.Repository
             
         }
 
-        public PlayerEntity GetPlayer()
+        public PlayerDbEntity GetPlayer()
         {
             return RepositoryData.Player;
         }

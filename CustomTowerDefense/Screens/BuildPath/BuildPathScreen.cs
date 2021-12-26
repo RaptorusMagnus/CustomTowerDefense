@@ -50,10 +50,12 @@ namespace CustomTowerDefense.Screens.BuildPath
         
         private BuildPathActionButtonType? _currentActiveActionButton;
         
+        // To store potential left click event and the related action.
         private readonly InputAction _mouseLeftClicked;
         
         private ContentManager _contentManager;
         
+        // From the GameStateManagement project: to gradually fade in/out the screen after a pause.
         private float _pauseAlpha;
 
         private readonly LogicalGameGridMultiple _gameGrid;
@@ -69,12 +71,15 @@ namespace CustomTowerDefense.Screens.BuildPath
         // The elements composing the path between the two vortexes
         private List<PathElement> _pathElements;
         
+        // The path along which the spaceships will move
+        // (from the start vortex to the end vortex) 
         private List<GridCoordinate> _pathCoordinates;
         
         // Colors for elements that may turn red and progressively go back to white.
         private Color _pathColor = Color.White;
         private Color _numberOfElementsInfoColor = Color.White;
 
+        // The buttons available in the interface
         private readonly List<BuildPathActionButtonType> _interfaceButtonTypes;
         
         #endregion

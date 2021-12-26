@@ -14,6 +14,18 @@ namespace CustomTowerDefense.GameEngine
         private TimeSpan _gameTimePreviousElement;
 
         #endregion
+        
+        /// <summary>
+        /// Message that will be displayed to the user at the beginning of the wave.
+        /// </summary>
+        public string IntroductionMessage { get; set; }
+        
+        /// <summary>
+        /// How fast the vortex is turning.
+        /// The faster is turns the faster spaceships are going out.
+        /// standard speed is 0.01f
+        /// </summary>
+        public float VortexSpeed { get; set; }
 
         public List<WaveElement> Elements { get; }
 

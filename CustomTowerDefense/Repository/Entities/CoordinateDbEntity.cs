@@ -3,8 +3,9 @@
 namespace CustomTowerDefense.Repository.Entities
 {
     [Serializable]
-    public class BaseEntity
+    public class CoordinateDbEntity: BaseDbEntity
     {
-        
+        public ushort X;
+        public ushort Y;
     }
 }

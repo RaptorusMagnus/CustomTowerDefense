@@ -13,22 +13,28 @@ namespace CustomTowerDefense.Repository
     [Serializable]
     public class RepositoryData
     {
-        public PlayerEntity Player;
+        public PlayerDbEntity Player;
 
-        public List<LevelEntity> Levels;
+        public List<LevelDbEntity> Levels;
         
         /// <summary>
-        /// Returns a sample object fully filled to make serialization tests.
+        /// Returns a sample object fully filled, to make serialization tests,
+        /// and produce a valid sample file that can be manually updated.
         /// </summary>
         /// <returns></returns>
         public static RepositoryData GetSampleObject()
         {
-            var player = new PlayerEntity {Level = 2};
-            var waveLevel1 = new WaveEntity
+            var player = new PlayerDbEntity
+            {
+                Level = 1,
+                WaveNumber = 1
+            };
+            
+            var waveLevel1 = new WaveDbEntity
                                 {
-                                    Elements = new List<WaveElementEntity>
+                                    Elements = new List<WaveElementDbEntity>
                                     {
-                                        new WaveElementEntity
+                                        new WaveElementDbEntity
                                         {
                                             RepeatNumber = 10,
                                             DelayBeforeCreation = 0,
@@ -37,17 +43,17 @@ namespace CustomTowerDefense.Repository
                                     }
                                 };
                 
-            var level1 = new LevelEntity
+            var level1 = new LevelDbEntity
             {
-                StartVortexCoordinate = new CoordinateEntity{ X= 0, Y=0},
-                EndVortexCoordinate = new CoordinateEntity{ X= 11, Y=6},
-                Waves = new List<WaveEntity>{waveLevel1}
+                StartVortexCoordinate = new CoordinateDbEntity{ X= 0, Y=0},
+                EndVortexCoordinate = new CoordinateDbEntity{ X= 11, Y=6},
+                Waves = new List<WaveDbEntity>{waveLevel1}
             };
             
             return new RepositoryData
             {
                 Player = player,
-                Levels = new List<LevelEntity>{level1}
+                Levels = new List<LevelDbEntity>{level1}
             };
         }
     }

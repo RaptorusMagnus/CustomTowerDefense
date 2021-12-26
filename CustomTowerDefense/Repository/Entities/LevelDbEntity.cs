@@ -13,11 +13,16 @@ namespace CustomTowerDefense.Repository.Entities
     ///     - at least one wave 
     /// </summary>
     [Serializable]
-    public class LevelEntity
+    public class LevelDbEntity
     {
-        public CoordinateEntity StartVortexCoordinate { get; set; }
-        public CoordinateEntity EndVortexCoordinate { get; set; }
+        /// <summary>
+        /// How much money is given to the player at the beginning of the level.
+        /// </summary>
+        public uint InitialPlayerMoney { get; set; }
         
-        public List<WaveEntity> Waves { get; set; }
+        public CoordinateDbEntity StartVortexCoordinate { get; set; }
+        public CoordinateDbEntity EndVortexCoordinate { get; set; }
+        
+        public List<WaveDbEntity> Waves { get; set; }
     }
 }
